@@ -1,0 +1,30 @@
+# Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+
+# Build outputs
+bin/
+dist/
+release/
+
+# Temporary files
+*.out
+*.log
+*.tmp
+*.swp
+.DS_Store
+
+# Go Modules
+vendor/
+
+# IDE / Editor
+.idea/
+.vscode/
+*.code-workspace
+
+# Node / Web (if needed later)
+node_modules/
+coverage/
