@@ -12,8 +12,11 @@ import (
 var (
 	ErrInvestigationNotFinished = errors.New("investigation not finished")
 	ErrInvestigationNotFound    = errors.New("investigation not found")
+	ErrInvestigationNotActive   = errors.New("investigation not active")
 	ErrMissionNotFound          = errors.New("mission not found")
 	ErrPlayerNotFound           = errors.New("player not found")
+	ErrNodeNotFound             = errors.New("node not found")
+	ErrOptionNotFound           = errors.New("option not found")
 )
 
 // Service orchestrates investigation flows.
@@ -43,6 +46,80 @@ type CompleteResult struct {
 	MissionID        string
 	Success          bool
 	ReputationGained int
+}
+
+// NodeProgressResult summarizes the node transition result.
+type NodeProgressResult struct {
+	InvestigationID string
+	MissionID       string
+	NodeID          string
+	OptionID        string
+	NextNodeID      string
+	Status          operation.InvestigationStatus
+}
+
+// AdvanceNode applies a player option, records evidence, and updates investigation status.
+func (s *Service) AdvanceNode(ctx context.Context, investigationID, nodeID, optionID string) (*NodeProgressResult, error) {
+	inv, err := s.investigations.FindByID(ctx, investigationID)
+	if err != nil {
+		return nil, fmt.Errorf("find investigation: %w", err)
+	}
+	if inv == nil {
+		return nil, ErrInvestigationNotFound
+	}
+	if inv.Status != operation.InvestigationStatusActive {
+		return nil, ErrInvestigationNotActive
+	}
+
+	mission, err := s.missions.FindByID(ctx, inv.MissionID)
+	if err != nil {
+		return nil, fmt.Errorf("find mission: %w", err)
+	}
+	if mission == nil {
+		return nil, ErrMissionNotFound
+	}
+
+	node := mission.GetNode(nodeID)
+	if node == nil {
+		return nil, ErrNodeNotFound
+	}
+
+	var selected *intelligence.NarrativeOption
+	for i := range node.Options {
+		if node.Options[i].ID == optionID {
+			selected = &node.Options[i]
+			break
+		}
+	}
+	if selected == nil {
+		return nil, ErrOptionNotFound
+	}
+
+	for _, evidenceID := range selected.EvidenceIDs {
+		inv.CollectEvidence(evidenceID)
+	}
+
+	inv.RecordDecision(nodeID, optionID, selected.NextNodeID)
+	if selected.LeadsToEnd {
+		if selected.SuccessEnd {
+			inv.Complete()
+		} else {
+			inv.Fail()
+		}
+	}
+
+	if err := s.investigations.Save(ctx, inv); err != nil {
+		return nil, fmt.Errorf("save investigation: %w", err)
+	}
+
+	return &NodeProgressResult{
+		InvestigationID: inv.ID,
+		MissionID:       inv.MissionID,
+		NodeID:          nodeID,
+		OptionID:        optionID,
+		NextNodeID:      selected.NextNodeID,
+		Status:          inv.Status,
+	}, nil
 }
 
 // CompleteInvestigation finalizes an investigation and applies reputation gains.

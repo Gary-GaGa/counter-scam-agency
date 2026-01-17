@@ -140,3 +140,114 @@ func TestCompleteInvestigationActive(t *testing.T) {
 
 	assert.ErrorIs(t, err, investigation.ErrInvestigationNotFinished)
 }
+
+func TestAdvanceNodeCollectsEvidence(t *testing.T) {
+	missions := &missionRepo{missions: map[string]*intelligence.Mission{}}
+	investigations := &investigationRepo{investigations: map[string]*operation.Investigation{}}
+	players := &playerRepo{players: map[string]*personnel.Player{}}
+
+	mission := intelligence.NewMission("mission-1", "Case A", "desc", intelligence.ScamTypePhishing, 1, 1)
+	mission.AddEvidence(*intelligence.NewEvidence("ev-1", "doc", intelligence.EvidenceTypeDocument, false))
+	mission.AddNode(intelligence.NarrativeNode{
+		ID:    "node-1",
+		Title: "Start",
+		Body:  "Start node",
+		Options: []intelligence.NarrativeOption{
+			{
+				ID:          "opt-1",
+				Label:       "Proceed",
+				NextNodeID:  "node-2",
+				EvidenceIDs: []string{"ev-1"},
+			},
+		},
+	})
+	mission.AddNode(intelligence.NarrativeNode{
+		ID:    "node-2",
+		Title: "Next",
+		Body:  "Next node",
+	})
+	missions.missions[mission.ID] = mission
+
+	player := personnel.NewPlayer("player-1")
+	players.players[player.ID] = player
+
+	inv := operation.NewInvestigation("inv-1", player.ID, mission.ID)
+	investigations.investigations[inv.ID] = inv
+
+	svc := investigation.NewService(missions, investigations, players)
+	result, err := svc.AdvanceNode(context.Background(), inv.ID, "node-1", "opt-1")
+
+	assert.NoError(t, err)
+	assert.Equal(t, "node-2", result.NextNodeID)
+	assert.Equal(t, operation.InvestigationStatusActive, result.Status)
+	assert.Equal(t, []string{"ev-1"}, inv.CollectedEvidenceIDs)
+	assert.Equal(t, "node-2", inv.CurrentNodeID)
+}
+
+func TestAdvanceNodeCompletesSuccess(t *testing.T) {
+	missions := &missionRepo{missions: map[string]*intelligence.Mission{}}
+	investigations := &investigationRepo{investigations: map[string]*operation.Investigation{}}
+	players := &playerRepo{players: map[string]*personnel.Player{}}
+
+	mission := intelligence.NewMission("mission-1", "Case A", "desc", intelligence.ScamTypePhishing, 1, 1)
+	mission.AddNode(intelligence.NarrativeNode{
+		ID:    "node-1",
+		Title: "End",
+		Body:  "End node",
+		Options: []intelligence.NarrativeOption{
+			{
+				ID:         "opt-1",
+				Label:      "Finish",
+				LeadsToEnd: true,
+				SuccessEnd: true,
+			},
+		},
+	})
+	missions.missions[mission.ID] = mission
+
+	player := personnel.NewPlayer("player-1")
+	players.players[player.ID] = player
+
+	inv := operation.NewInvestigation("inv-1", player.ID, mission.ID)
+	investigations.investigations[inv.ID] = inv
+
+	svc := investigation.NewService(missions, investigations, players)
+	result, err := svc.AdvanceNode(context.Background(), inv.ID, "node-1", "opt-1")
+
+	assert.NoError(t, err)
+	assert.Equal(t, operation.InvestigationStatusCompleted, result.Status)
+}
+
+func TestAdvanceNodeCompletesFailure(t *testing.T) {
+	missions := &missionRepo{missions: map[string]*intelligence.Mission{}}
+	investigations := &investigationRepo{investigations: map[string]*operation.Investigation{}}
+	players := &playerRepo{players: map[string]*personnel.Player{}}
+
+	mission := intelligence.NewMission("mission-1", "Case A", "desc", intelligence.ScamTypePhishing, 1, 1)
+	mission.AddNode(intelligence.NarrativeNode{
+		ID:    "node-1",
+		Title: "End",
+		Body:  "End node",
+		Options: []intelligence.NarrativeOption{
+			{
+				ID:         "opt-1",
+				Label:      "Fail",
+				LeadsToEnd: true,
+				SuccessEnd: false,
+			},
+		},
+	})
+	missions.missions[mission.ID] = mission
+
+	player := personnel.NewPlayer("player-1")
+	players.players[player.ID] = player
+
+	inv := operation.NewInvestigation("inv-1", player.ID, mission.ID)
+	investigations.investigations[inv.ID] = inv
+
+	svc := investigation.NewService(missions, investigations, players)
+	result, err := svc.AdvanceNode(context.Background(), inv.ID, "node-1", "opt-1")
+
+	assert.NoError(t, err)
+	assert.Equal(t, operation.InvestigationStatusFailed, result.Status)
+}
