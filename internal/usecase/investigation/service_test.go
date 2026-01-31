@@ -179,7 +179,7 @@ func TestAdvanceNodeCollectsEvidence(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, "node-2", result.NextNodeID)
-	assert.Equal(t, operation.InvestigationStatusActive, result.Status)
+	assert.Equal(t, string(operation.InvestigationStatusActive), result.Status)
 	assert.Equal(t, []string{"ev-1"}, inv.CollectedEvidenceIDs)
 	assert.Equal(t, "node-2", inv.CurrentNodeID)
 }
@@ -215,7 +215,7 @@ func TestAdvanceNodeCompletesSuccess(t *testing.T) {
 	result, err := svc.AdvanceNode(context.Background(), inv.ID, "node-1", "opt-1")
 
 	assert.NoError(t, err)
-	assert.Equal(t, operation.InvestigationStatusCompleted, result.Status)
+	assert.Equal(t, string(operation.InvestigationStatusCompleted), result.Status)
 }
 
 func TestAdvanceNodeCompletesFailure(t *testing.T) {
@@ -249,5 +249,131 @@ func TestAdvanceNodeCompletesFailure(t *testing.T) {
 	result, err := svc.AdvanceNode(context.Background(), inv.ID, "node-1", "opt-1")
 
 	assert.NoError(t, err)
-	assert.Equal(t, operation.InvestigationStatusFailed, result.Status)
+	assert.Equal(t, string(operation.InvestigationStatusFailed), result.Status)
+}
+
+func TestSubmitEvidence(t *testing.T) {
+	missions := &missionRepo{missions: map[string]*intelligence.Mission{}}
+	investigations := &investigationRepo{investigations: map[string]*operation.Investigation{}}
+	players := &playerRepo{players: map[string]*personnel.Player{}}
+
+	mission := intelligence.NewMission("mission-1", "Case A", "desc", intelligence.ScamTypePhishing, 1, 1)
+	mission.AddEvidence(*intelligence.NewEvidence("ev-1", "doc", intelligence.EvidenceTypeDocument, true))
+	missions.missions[mission.ID] = mission
+
+	player := personnel.NewPlayer("player-1")
+	players.players[player.ID] = player
+
+	inv := operation.NewInvestigation("inv-1", player.ID, mission.ID)
+	investigations.investigations[inv.ID] = inv
+
+	svc := investigation.NewService(missions, investigations, players)
+	result, err := svc.SubmitEvidence(context.Background(), inv.ID, "ev-1")
+
+	assert.NoError(t, err)
+	assert.True(t, result.IsContradiction)
+	assert.False(t, result.AlreadyCollected)
+	assert.Contains(t, inv.CollectedEvidenceIDs, "ev-1")
+	assert.Equal(t, 0, inv.SuspicionLevel)
+}
+
+func TestSubmitEvidenceIncreasesSuspicion(t *testing.T) {
+	missions := &missionRepo{missions: map[string]*intelligence.Mission{}}
+	investigations := &investigationRepo{investigations: map[string]*operation.Investigation{}}
+	players := &playerRepo{players: map[string]*personnel.Player{}}
+
+	mission := intelligence.NewMission("mission-1", "Case A", "desc", intelligence.ScamTypePhishing, 1, 1)
+	mission.AddEvidence(*intelligence.NewEvidence("ev-1", "doc", intelligence.EvidenceTypeDocument, false))
+	missions.missions[mission.ID] = mission
+
+	player := personnel.NewPlayer("player-1")
+	players.players[player.ID] = player
+
+	inv := operation.NewInvestigation("inv-1", player.ID, mission.ID)
+	investigations.investigations[inv.ID] = inv
+
+	svc := investigation.NewService(missions, investigations, players)
+	result, err := svc.SubmitEvidence(context.Background(), inv.ID, "ev-1")
+
+	assert.NoError(t, err)
+	assert.False(t, result.IsContradiction)
+	assert.Equal(t, 10, inv.SuspicionLevel)
+}
+
+func TestSubmitEvidenceNotFound(t *testing.T) {
+	missions := &missionRepo{missions: map[string]*intelligence.Mission{}}
+	investigations := &investigationRepo{investigations: map[string]*operation.Investigation{}}
+	players := &playerRepo{players: map[string]*personnel.Player{}}
+
+	mission := intelligence.NewMission("mission-1", "Case A", "desc", intelligence.ScamTypePhishing, 1, 1)
+	missions.missions[mission.ID] = mission
+
+	player := personnel.NewPlayer("player-1")
+	players.players[player.ID] = player
+
+	inv := operation.NewInvestigation("inv-1", player.ID, mission.ID)
+	investigations.investigations[inv.ID] = inv
+
+	svc := investigation.NewService(missions, investigations, players)
+	_, err := svc.SubmitEvidence(context.Background(), inv.ID, "ev-404")
+
+	assert.ErrorIs(t, err, investigation.ErrEvidenceNotFound)
+}
+
+func TestStartInvestigationDefaultsToFirstNode(t *testing.T) {
+	missions := &missionRepo{missions: map[string]*intelligence.Mission{}}
+	investigations := &investigationRepo{investigations: map[string]*operation.Investigation{}}
+	players := &playerRepo{players: map[string]*personnel.Player{}}
+
+	mission := intelligence.NewMission("mission-1", "Case A", "desc", intelligence.ScamTypePhishing, 1, 1)
+	mission.AddNode(intelligence.NarrativeNode{ID: "node-1", Title: "Start", Body: "Start node"})
+	mission.AddNode(intelligence.NarrativeNode{ID: "node-2", Title: "Next", Body: "Next node"})
+	missions.missions[mission.ID] = mission
+
+	player := personnel.NewPlayer("player-1")
+	players.players[player.ID] = player
+
+	svc := investigation.NewService(missions, investigations, players)
+	result, err := svc.StartInvestigation(context.Background(), "inv-1", player.ID, mission.ID, "")
+
+	assert.NoError(t, err)
+	assert.Equal(t, "inv-1", result.InvestigationID)
+	assert.Equal(t, "node-1", result.CurrentNodeID)
+	assert.Equal(t, string(operation.InvestigationStatusActive), result.Status)
+}
+
+func TestStartInvestigationWithExplicitNode(t *testing.T) {
+	missions := &missionRepo{missions: map[string]*intelligence.Mission{}}
+	investigations := &investigationRepo{investigations: map[string]*operation.Investigation{}}
+	players := &playerRepo{players: map[string]*personnel.Player{}}
+
+	mission := intelligence.NewMission("mission-1", "Case A", "desc", intelligence.ScamTypePhishing, 1, 1)
+	mission.AddNode(intelligence.NarrativeNode{ID: "start", Title: "Start", Body: "Start node"})
+	mission.AddNode(intelligence.NarrativeNode{ID: "node-2", Title: "Next", Body: "Next node"})
+	missions.missions[mission.ID] = mission
+
+	player := personnel.NewPlayer("player-1")
+	players.players[player.ID] = player
+
+	svc := investigation.NewService(missions, investigations, players)
+	result, err := svc.StartInvestigation(context.Background(), "inv-1", player.ID, mission.ID, "node-2")
+
+	assert.NoError(t, err)
+	assert.Equal(t, "node-2", result.CurrentNodeID)
+}
+
+func TestListMissions(t *testing.T) {
+	missions := &missionRepo{missions: map[string]*intelligence.Mission{}}
+	investigations := &investigationRepo{investigations: map[string]*operation.Investigation{}}
+	players := &playerRepo{players: map[string]*personnel.Player{}}
+
+	mission := intelligence.NewMission("mission-1", "Case A", "desc", intelligence.ScamTypePhishing, 1, 1)
+	missions.missions[mission.ID] = mission
+
+	svc := investigation.NewService(missions, investigations, players)
+	list, err := svc.ListMissions(context.Background())
+
+	assert.NoError(t, err)
+	assert.Len(t, list, 1)
+	assert.Equal(t, "mission-1", list[0].ID)
 }

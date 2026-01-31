@@ -5,6 +5,7 @@ import (
 	"counter-scam-agency/internal/domain/intelligence"
 	"counter-scam-agency/internal/domain/operation"
 	"counter-scam-agency/internal/domain/personnel"
+	"counter-scam-agency/internal/usecase/dto"
 	"errors"
 	"fmt"
 )
@@ -13,10 +14,13 @@ var (
 	ErrInvestigationNotFinished = errors.New("investigation not finished")
 	ErrInvestigationNotFound    = errors.New("investigation not found")
 	ErrInvestigationNotActive   = errors.New("investigation not active")
+	ErrInvestigationExists      = errors.New("investigation already exists")
 	ErrMissionNotFound          = errors.New("mission not found")
 	ErrPlayerNotFound           = errors.New("player not found")
 	ErrNodeNotFound             = errors.New("node not found")
 	ErrOptionNotFound           = errors.New("option not found")
+	ErrStartNodeNotFound        = errors.New("start node not found")
+	ErrEvidenceNotFound         = errors.New("evidence not found")
 )
 
 // Service orchestrates investigation flows.
@@ -39,27 +43,133 @@ func NewService(
 	}
 }
 
-// CompleteResult summarizes the investigation completion outcome.
-type CompleteResult struct {
-	InvestigationID  string
-	PlayerID         string
-	MissionID        string
-	Success          bool
-	ReputationGained int
+// ListMissions returns available missions for selection.
+func (s *Service) ListMissions(ctx context.Context) ([]dto.MissionSummary, error) {
+	missions, err := s.missions.FindAll(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("find missions: %w", err)
+	}
+	results := make([]dto.MissionSummary, 0, len(missions))
+	for _, mission := range missions {
+		if mission == nil {
+			continue
+		}
+		results = append(results, dto.MissionSummary{
+			ID:               mission.ID,
+			Title:            mission.Title,
+			Description:      mission.Description,
+			Type:             string(mission.Type),
+			Difficulty:       mission.Difficulty,
+			ReputationWeight: mission.ReputationWeight,
+		})
+	}
+	return results, nil
 }
 
-// NodeProgressResult summarizes the node transition result.
-type NodeProgressResult struct {
-	InvestigationID string
-	MissionID       string
-	NodeID          string
-	OptionID        string
-	NextNodeID      string
-	Status          operation.InvestigationStatus
+// GetMission returns mission details for UI rendering.
+func (s *Service) GetMission(ctx context.Context, missionID string) (*dto.MissionDetail, error) {
+	mission, err := s.missions.FindByID(ctx, missionID)
+	if err != nil {
+		return nil, fmt.Errorf("find mission: %w", err)
+	}
+	if mission == nil {
+		return nil, ErrMissionNotFound
+	}
+
+	result := &dto.MissionDetail{
+		ID:               mission.ID,
+		Title:            mission.Title,
+		Description:      mission.Description,
+		Type:             string(mission.Type),
+		Difficulty:       mission.Difficulty,
+		ReputationWeight: mission.ReputationWeight,
+		Nodes:            make([]dto.NarrativeNode, 0, len(mission.Nodes)),
+		EvidenceList:     make([]dto.Evidence, 0, len(mission.EvidenceList)),
+	}
+
+	for _, node := range mission.Nodes {
+		mapped := dto.NarrativeNode{
+			ID:         node.ID,
+			Title:      node.Title,
+			Body:       node.Body,
+			IsTerminal: node.IsTerminal,
+			Options:    make([]dto.NarrativeOption, 0, len(node.Options)),
+		}
+		for _, opt := range node.Options {
+			mapped.Options = append(mapped.Options, dto.NarrativeOption{
+				ID:          opt.ID,
+				Label:       opt.Label,
+				NextNodeID:  opt.NextNodeID,
+				EvidenceIDs: append([]string{}, opt.EvidenceIDs...),
+				LeadsToEnd:  opt.LeadsToEnd,
+				SuccessEnd:  opt.SuccessEnd,
+			})
+		}
+		result.Nodes = append(result.Nodes, mapped)
+	}
+
+	for _, ev := range mission.EvidenceList {
+		result.EvidenceList = append(result.EvidenceList, dto.Evidence{
+			ID:              ev.ID,
+			Description:     ev.Description,
+			Type:            string(ev.Type),
+			IsContradiction: ev.IsContradiction,
+		})
+	}
+
+	return result, nil
+}
+
+// StartInvestigation creates a new investigation instance and sets the initial node.
+func (s *Service) StartInvestigation(ctx context.Context, investigationID, playerID, missionID, startNodeID string) (*dto.InvestigationStartResult, error) {
+	if investigationID != "" {
+		existing, err := s.investigations.FindByID(ctx, investigationID)
+		if err != nil {
+			return nil, fmt.Errorf("find investigation: %w", err)
+		}
+		if existing != nil {
+			return nil, ErrInvestigationExists
+		}
+	}
+
+	player, err := s.players.FindByID(ctx, playerID)
+	if err != nil {
+		return nil, fmt.Errorf("find player: %w", err)
+	}
+	if player == nil {
+		return nil, ErrPlayerNotFound
+	}
+
+	mission, err := s.missions.FindByID(ctx, missionID)
+	if err != nil {
+		return nil, fmt.Errorf("find mission: %w", err)
+	}
+	if mission == nil {
+		return nil, ErrMissionNotFound
+	}
+
+	startNode := resolveStartNode(mission, startNodeID)
+	if startNode == nil {
+		return nil, ErrStartNodeNotFound
+	}
+
+	inv := operation.NewInvestigation(investigationID, playerID, missionID)
+	inv.SetCurrentNode(startNode.ID)
+	if err := s.investigations.Save(ctx, inv); err != nil {
+		return nil, fmt.Errorf("save investigation: %w", err)
+	}
+
+	return &dto.InvestigationStartResult{
+		InvestigationID: inv.ID,
+		PlayerID:        inv.PlayerID,
+		MissionID:       inv.MissionID,
+		CurrentNodeID:   inv.CurrentNodeID,
+		Status:          string(inv.Status),
+	}, nil
 }
 
 // AdvanceNode applies a player option, records evidence, and updates investigation status.
-func (s *Service) AdvanceNode(ctx context.Context, investigationID, nodeID, optionID string) (*NodeProgressResult, error) {
+func (s *Service) AdvanceNode(ctx context.Context, investigationID, nodeID, optionID string) (*dto.NodeProgressResult, error) {
 	inv, err := s.investigations.FindByID(ctx, investigationID)
 	if err != nil {
 		return nil, fmt.Errorf("find investigation: %w", err)
@@ -112,18 +222,61 @@ func (s *Service) AdvanceNode(ctx context.Context, investigationID, nodeID, opti
 		return nil, fmt.Errorf("save investigation: %w", err)
 	}
 
-	return &NodeProgressResult{
+	return &dto.NodeProgressResult{
 		InvestigationID: inv.ID,
 		MissionID:       inv.MissionID,
 		NodeID:          nodeID,
 		OptionID:        optionID,
 		NextNodeID:      selected.NextNodeID,
-		Status:          inv.Status,
+		Status:          string(inv.Status),
+	}, nil
+}
+
+// SubmitEvidence records evidence submission and returns contradiction info.
+func (s *Service) SubmitEvidence(ctx context.Context, investigationID, evidenceID string) (*dto.SubmitEvidenceResult, error) {
+	inv, err := s.investigations.FindByID(ctx, investigationID)
+	if err != nil {
+		return nil, fmt.Errorf("find investigation: %w", err)
+	}
+	if inv == nil {
+		return nil, ErrInvestigationNotFound
+	}
+	if inv.Status != operation.InvestigationStatusActive {
+		return nil, ErrInvestigationNotActive
+	}
+
+	mission, err := s.missions.FindByID(ctx, inv.MissionID)
+	if err != nil {
+		return nil, fmt.Errorf("find mission: %w", err)
+	}
+	if mission == nil {
+		return nil, ErrMissionNotFound
+	}
+
+	evidence := mission.GetEvidence(evidenceID)
+	if evidence == nil {
+		return nil, ErrEvidenceNotFound
+	}
+
+	alreadyCollected := isEvidenceCollected(inv, evidenceID)
+	inv.CollectEvidence(evidenceID)
+	if !evidence.IsContradiction {
+		inv.IncreaseSuspicion(10)
+	}
+	if err := s.investigations.Save(ctx, inv); err != nil {
+		return nil, fmt.Errorf("save investigation: %w", err)
+	}
+
+	return &dto.SubmitEvidenceResult{
+		InvestigationID:  inv.ID,
+		EvidenceID:       evidenceID,
+		IsContradiction:  evidence.IsContradiction,
+		AlreadyCollected: alreadyCollected,
 	}, nil
 }
 
 // CompleteInvestigation finalizes an investigation and applies reputation gains.
-func (s *Service) CompleteInvestigation(ctx context.Context, investigationID string) (*CompleteResult, error) {
+func (s *Service) CompleteInvestigation(ctx context.Context, investigationID string) (*dto.CompleteResult, error) {
 	inv, err := s.investigations.FindByID(ctx, investigationID)
 	if err != nil {
 		return nil, fmt.Errorf("find investigation: %w", err)
@@ -160,11 +313,39 @@ func (s *Service) CompleteInvestigation(ctx context.Context, investigationID str
 		}
 	}
 
-	return &CompleteResult{
+	return &dto.CompleteResult{
 		InvestigationID:  inv.ID,
 		PlayerID:         inv.PlayerID,
 		MissionID:        inv.MissionID,
 		Success:          success,
 		ReputationGained: gain,
 	}, nil
+}
+
+func resolveStartNode(mission *intelligence.Mission, explicitID string) *intelligence.NarrativeNode {
+	if mission == nil {
+		return nil
+	}
+	if explicitID != "" {
+		return mission.GetNode(explicitID)
+	}
+	if node := mission.GetNode("start"); node != nil {
+		return node
+	}
+	if len(mission.Nodes) > 0 {
+		return &mission.Nodes[0]
+	}
+	return nil
+}
+
+func isEvidenceCollected(inv *operation.Investigation, evidenceID string) bool {
+	if inv == nil {
+		return false
+	}
+	for _, id := range inv.CollectedEvidenceIDs {
+		if id == evidenceID {
+			return true
+		}
+	}
+	return false
 }
