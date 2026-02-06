@@ -1,6 +1,6 @@
 package defense
 
-// FacilityDocPo -
+// FacilityDocPo represents a facility MongoDB document.
 type FacilityDocPo struct {
 	ID          string `bson:"id"`
 	Type        string `bson:"type"`

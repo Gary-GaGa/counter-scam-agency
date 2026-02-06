@@ -1,6 +1,6 @@
 package defense
 
-// BaseDocPo -
+// BaseDocPo represents a defense base MongoDB document.
 type BaseDocPo struct {
 	ID            string          `bson:"id"`
 	OwnerID       string          `bson:"owner_id"`

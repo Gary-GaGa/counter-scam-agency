@@ -1,6 +1,6 @@
 package defense
 
-// UpgradeDocPo -
+// UpgradeDocPo represents a base upgrade MongoDB document.
 type UpgradeDocPo struct {
 	ID          string `bson:"id"`
 	Name        string `bson:"name"`

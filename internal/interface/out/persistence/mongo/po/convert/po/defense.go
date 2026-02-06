@@ -5,7 +5,7 @@ import (
 	"counter-scam-agency/internal/interface/out/persistence/mongo/po/defense"
 )
 
-// BaseDocToPo -
+// BaseDocToPo converts a domain Base to a BaseDocPo.
 func BaseDocToPo(in *model.Base) *defense.BaseDocPo {
 	if in == nil {
 		return new(defense.BaseDocPo)
@@ -21,7 +21,7 @@ func BaseDocToPo(in *model.Base) *defense.BaseDocPo {
 	}
 }
 
-// FacilityDocsToPo -
+// FacilityDocsToPo converts a slice of domain Facility to FacilityDocPo.
 func FacilityDocsToPo(in []model.Facility) []defense.FacilityDocPo {
 	list := make([]defense.FacilityDocPo, len(in))
 
@@ -32,7 +32,7 @@ func FacilityDocsToPo(in []model.Facility) []defense.FacilityDocPo {
 	return list
 }
 
-// FacilityDocToPo -
+// FacilityDocToPo converts a single domain Facility to FacilityDocPo.
 func FacilityDocToPo(in model.Facility) defense.FacilityDocPo {
 	return defense.FacilityDocPo{
 		ID:          in.ID,
@@ -44,7 +44,7 @@ func FacilityDocToPo(in model.Facility) defense.FacilityDocPo {
 	}
 }
 
-// UpgradeDocsToPo -
+// UpgradeDocsToPo converts a slice of domain Upgrade to UpgradeDocPo.
 func UpgradeDocsToPo(in []model.Upgrade) []defense.UpgradeDocPo {
 	list := make([]defense.UpgradeDocPo, len(in))
 
@@ -55,7 +55,7 @@ func UpgradeDocsToPo(in []model.Upgrade) []defense.UpgradeDocPo {
 	return list
 }
 
-// UpgradeDocToPo -
+// UpgradeDocToPo converts a single domain Upgrade to UpgradeDocPo.
 func UpgradeDocToPo(in model.Upgrade) defense.UpgradeDocPo {
 	return defense.UpgradeDocPo{
 		ID:          in.ID,

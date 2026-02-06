@@ -4,6 +4,9 @@
 *.so
 *.dylib
 *.test
+/cli
+/adventure
+/seed-missions
 
 # Build outputs
 bin/

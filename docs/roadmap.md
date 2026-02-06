@@ -30,19 +30,21 @@
 - [x] Domain：受害者心理側寫（VictimProfile）
 - [x] Domain：數位防禦基地（Base / Facility）
 - [x] Usecase：基地管理流程（建立 / 升級 / 設施）
-- [x] Infrastructure：基地 Mongo Repository
+- [x] Infrastructure：基地 Mongo Repository（Save / FindByID / FindByOwnerID）
 - [x] Seed：任務心理側寫資料
 - [x] Usecase：AI 技能流程（解鎖 / 裝備 / 啟動 / 冷卻）
+- [x] CLI：主選單整合（調查案件 / 技能樹 / 模組裝備 / 防禦基地 / 角色狀態）
+- [x] **AI 模組與技能系統**：模組裝備 CLI 介面與技能解鎖/裝備/啟動流程
+- [x] **數位防禦基地**：基地建設與設施升級 CLI 介面
+- [x] **受害者心理側寫**：心理狀態分析與應對策略建議機制
+- [x] CLI：冒險模式入口（`cmd/adventure`）
 - [ ] Ebiten UI：案件面板、推理棋盤、技能樹介面
-- [ ] **AI 模組與技能系統**：裝備介面與主動技能實作
 - [ ] 直播宣導 / 情報擴散玩法
-- [ ] **數位防禦基地**：基地建設與資安升級系統
 - [ ] **小遊戲開發**：
     - [ ] 矛盾擊破 (Logic) - 彈幕射擊玩法
     - [ ] 訊號追蹤 (Tech) - 接水管/駭客玩法
     - [ ] 談判牌局 (Charisma) - 卡牌對戰玩法
     - [ ] 心靈調適 (Resilience) - 節奏/休閒玩法
-- [ ] **受害者心理側寫**：心理狀態分析與應對機制
 
 ## Phase 3 — Content Expansion
 - [ ] 新案件章節：情感攻防、高科技對決、跨國詐團
