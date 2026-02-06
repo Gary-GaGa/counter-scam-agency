@@ -26,6 +26,13 @@
 - [x] 撰寫自動化測試（Domain/Usecase）
 
 ## Phase 2 — Visual & UX Upgrade
+- [x] Domain：AI 技能模型（Skill）
+- [x] Domain：受害者心理側寫（VictimProfile）
+- [x] Domain：數位防禦基地（Base / Facility）
+- [x] Usecase：基地管理流程（建立 / 升級 / 設施）
+- [x] Infrastructure：基地 Mongo Repository
+- [x] Seed：任務心理側寫資料
+- [x] Usecase：AI 技能流程（解鎖 / 裝備 / 啟動 / 冷卻）
 - [ ] Ebiten UI：案件面板、推理棋盤、技能樹介面
 - [ ] **AI 模組與技能系統**：裝備介面與主動技能實作
 - [ ] 直播宣導 / 情報擴散玩法

@@ -8,6 +8,7 @@ type Mission struct {
 	Type             ScamType
 	Difficulty       int
 	ReputationWeight int
+	VictimProfile    *VictimProfile
 	Nodes            []NarrativeNode
 	EvidenceList     []Evidence
 }
@@ -21,6 +22,7 @@ func NewMission(id, title, description string, scamType ScamType, difficulty int
 		Type:             scamType,
 		Difficulty:       difficulty,
 		ReputationWeight: reputationWeight,
+		VictimProfile:    nil,
 		Nodes:            make([]NarrativeNode, 0),
 		EvidenceList:     make([]Evidence, 0),
 	}

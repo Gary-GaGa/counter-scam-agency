@@ -7,6 +7,7 @@ type Player struct {
 	Partner           *AIPartner
 	Reputation        int
 	UnlockedModuleIDs map[string]struct{}
+	UnlockedSkillIDs  map[string]struct{}
 }
 
 // NewPlayer creates a player with initial stats.
@@ -22,6 +23,7 @@ func NewPlayer(id string) *Player {
 		Partner:           NewAIPartner(),
 		Reputation:        0,
 		UnlockedModuleIDs: make(map[string]struct{}),
+		UnlockedSkillIDs:  make(map[string]struct{}),
 	}
 }
 
@@ -83,4 +85,63 @@ func (p *Player) EquipPartnerModule(mod Module) bool {
 	}
 	p.Partner.InstallModule(mod)
 	return true
+}
+
+// IsSkillUnlocked checks whether a skill has been unlocked.
+func (p *Player) IsSkillUnlocked(skillID string) bool {
+	if len(p.UnlockedSkillIDs) == 0 {
+		return false
+	}
+	_, ok := p.UnlockedSkillIDs[skillID]
+	return ok
+}
+
+// CanUnlockSkill checks if the player meets the reputation requirement.
+func (p *Player) CanUnlockSkill(skill Skill) bool {
+	if skill.ID == "" {
+		return false
+	}
+	if p.IsSkillUnlocked(skill.ID) {
+		return false
+	}
+	return p.Reputation >= skill.ReputationRequired
+}
+
+// UnlockSkill unlocks a skill if requirements are met.
+func (p *Player) UnlockSkill(skill Skill) bool {
+	if !p.CanUnlockSkill(skill) {
+		return false
+	}
+	if p.UnlockedSkillIDs == nil {
+		p.UnlockedSkillIDs = make(map[string]struct{})
+	}
+	p.UnlockedSkillIDs[skill.ID] = struct{}{}
+	return true
+}
+
+// EquipPartnerSkill installs a skill onto the AI Partner if unlocked.
+func (p *Player) EquipPartnerSkill(skill Skill) bool {
+	if p.Partner == nil {
+		return false
+	}
+	if !p.IsSkillUnlocked(skill.ID) {
+		return false
+	}
+	return p.Partner.LearnSkill(skill)
+}
+
+// ActivatePartnerSkill activates a learned skill on the AI partner.
+func (p *Player) ActivatePartnerSkill(skillID string) bool {
+	if p.Partner == nil {
+		return false
+	}
+	return p.Partner.UseSkill(skillID)
+}
+
+// TickPartnerSkillCooldowns reduces cooldowns for all AI skills.
+func (p *Player) TickPartnerSkillCooldowns(seconds int) {
+	if p.Partner == nil {
+		return
+	}
+	p.Partner.TickCooldown(seconds)
 }

@@ -7,7 +7,7 @@ import (
 
 	"counter-scam-agency/internal/domain/intelligence"
 	mongoinfra "counter-scam-agency/internal/infrastructure/persistence/mongo"
-	"counter-scam-agency/internal/infrastructure/persistence/mongo/mission"
+	"counter-scam-agency/internal/interface/out/persistence/mongo/mission"
 )
 
 func main() {
@@ -65,6 +65,12 @@ func seedFakeSupportMission() *intelligence.Mission {
 		2,
 		2,
 	)
+	mission.VictimProfile = &intelligence.VictimProfile{
+		Anxiety:   70,
+		Trust:     60,
+		Urgency:   65,
+		Isolation: 40,
+	}
 
 	mission.AddEvidence(*intelligence.NewEvidence("ev-support-1", "對方要求提供驗證碼", intelligence.EvidenceTypeDialogue, true))
 	mission.AddEvidence(*intelligence.NewEvidence("ev-support-2", "來電號碼與官方不符", intelligence.EvidenceTypeDocument, true))
@@ -132,6 +138,12 @@ func seedInvestmentGroupMission() *intelligence.Mission {
 		3,
 		2,
 	)
+	mission.VictimProfile = &intelligence.VictimProfile{
+		Anxiety:   55,
+		Trust:     80,
+		Urgency:   75,
+		Isolation: 60,
+	}
 
 	mission.AddEvidence(*intelligence.NewEvidence("ev-invest-1", "群組要求先付入會費", intelligence.EvidenceTypeTransaction, true))
 	mission.AddEvidence(*intelligence.NewEvidence("ev-invest-2", "收益截圖無法驗證", intelligence.EvidenceTypeImage, true))

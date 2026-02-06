@@ -83,6 +83,7 @@ func (s *Service) GetMission(ctx context.Context, missionID string) (*dto.Missio
 		Type:             string(mission.Type),
 		Difficulty:       mission.Difficulty,
 		ReputationWeight: mission.ReputationWeight,
+		VictimProfile:    mapVictimProfile(mission.VictimProfile),
 		Nodes:            make([]dto.NarrativeNode, 0, len(mission.Nodes)),
 		EvidenceList:     make([]dto.Evidence, 0, len(mission.EvidenceList)),
 	}
@@ -348,4 +349,18 @@ func isEvidenceCollected(inv *operation.Investigation, evidenceID string) bool {
 		}
 	}
 	return false
+}
+
+func mapVictimProfile(profile *intelligence.VictimProfile) *dto.VictimProfile {
+	if profile == nil {
+		return nil
+	}
+	return &dto.VictimProfile{
+		Anxiety:   profile.Anxiety,
+		Trust:     profile.Trust,
+		Urgency:   profile.Urgency,
+		Isolation: profile.Isolation,
+		RiskScore: profile.RiskScore(),
+		RiskLevel: string(profile.RiskLevel()),
+	}
 }

@@ -43,3 +43,23 @@ func TestAIPartnerPersonality(t *testing.T) {
 	ai := personnel.NewAIPartner()
 	assert.Equal(t, personnel.PersonalityBalanced, ai.Personality)
 }
+
+func TestPlayerSkillUnlockAndEquip(t *testing.T) {
+	player := personnel.NewPlayer("agent-008")
+	skill := personnel.Skill{
+		ID:                 "skill-001",
+		Type:               personnel.SkillTypeAnalysis,
+		Name:               "Rapid Analysis",
+		CooldownSeconds:    10,
+		ReputationRequired: 30,
+	}
+
+	player.AddReputation(30)
+	assert.True(t, player.UnlockSkill(skill))
+	assert.True(t, player.EquipPartnerSkill(skill))
+	assert.True(t, player.Partner.HasSkill("skill-001"))
+	assert.True(t, player.ActivatePartnerSkill("skill-001"))
+	assert.False(t, player.ActivatePartnerSkill("skill-001"))
+	player.TickPartnerSkillCooldowns(10)
+	assert.True(t, player.ActivatePartnerSkill("skill-001"))
+}

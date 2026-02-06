@@ -18,8 +18,19 @@ type MissionDetail struct {
 	Type             string
 	Difficulty       int
 	ReputationWeight int
+	VictimProfile    *VictimProfile
 	Nodes            []NarrativeNode
 	EvidenceList     []Evidence
+}
+
+// VictimProfile represents victim psychology for UI rendering.
+type VictimProfile struct {
+	Anxiety   int
+	Trust     int
+	Urgency   int
+	Isolation int
+	RiskScore int
+	RiskLevel string
 }
 
 // NarrativeNode represents a narrative node for UI rendering.

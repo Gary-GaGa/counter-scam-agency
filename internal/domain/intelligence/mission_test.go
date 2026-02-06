@@ -45,3 +45,14 @@ func TestEvidenceManagement(t *testing.T) {
 	assert.False(t, mission.ValidateContradiction("ev-002"))
 	assert.False(t, mission.ValidateContradiction("non-existent-id"))
 }
+
+func TestVictimProfileRiskLevel(t *testing.T) {
+	profile := intelligence.VictimProfile{
+		Anxiety:   80,
+		Trust:     70,
+		Urgency:   60,
+		Isolation: 50,
+	}
+	assert.Equal(t, 65, profile.RiskScore())
+	assert.Equal(t, intelligence.RiskLevelMedium, profile.RiskLevel())
+}
