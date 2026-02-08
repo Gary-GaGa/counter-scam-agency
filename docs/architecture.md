@@ -149,3 +149,24 @@ Contains external setup details shared across adapters.
 5.  **Input Ports as Interfaces**: Usecase interfaces in `port/in/` enable adapters (CLI, HTTP) to depend on abstractions, not concrete services.
 6.  **DTO Boundary**: Domain entities never leak to UI/API; all external communication uses DTOs defined in `usecase/dto/`.
 7.  **Cross-Context Orchestration in Usecase**: Services like `InvestigationService` coordinate multiple bounded contexts (Intelligence + Operation + Personnel) without coupling domain layers to each other.
+8.  **Compile-time Interface Guards**: Each repository and usecase service includes `var _ Interface = (*Impl)(nil)` to ensure interface satisfaction at compile time.
+
+## 5. Frontend Layer (Planned)
+
+### Technology
+- **Phaser 3** + **TypeScript**: Pixel-art 2D game engine running in the browser.
+- **Architecture**: Mixed mode — core game logic stays on the Go backend (REST API), frontend handles rendering and mini-game execution.
+
+### Responsibilities
+| Aspect | Frontend (Phaser.js) | Backend (Go) |
+|---|---|---|
+| Investigation | Node rendering, option UI, animations | State transitions, reputation calculation, save |
+| Skills/Modules | Skill tree panel, equipment drag & drop | Unlock validation, cooldown timing |
+| Defense Base | Building visuals, facility placement | Build rules, upgrade logic |
+| Mini-games | Full game execution (bullet hell, cards…) | Result validation, score recording |
+| Victim Profile | Radar chart visualization, strategy tips | Risk score calculation |
+
+### Communication
+- Frontend ↔ Backend via **REST API** (`internal/interface/in/http`)
+- JSON request/response using existing DTO structures
+- Stateless HTTP for most operations; WebSocket reserved for future real-time features

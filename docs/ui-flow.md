@@ -62,3 +62,54 @@
 - Domain：Mission / NarrativeNode / NarrativeOption / Evidence
 - Usecase：StartInvestigation / AdvanceNode / CompleteInvestigation
 - Interface：CLI Adapter 負責輸入輸出與流程串接
+
+---
+
+## 5. Web UI Flow（Phaser.js 像素風格）
+
+Phase 2 起改以 **Phaser 3 + TypeScript** 實作像素風格 Web UI，取代原 Ebiten 方案。  
+前端透過 REST API 與 Go 後端溝通，核心邏輯（狀態、規則、存檔）保留在後端。
+
+### 5.1 畫面架構
+
+```
+┌─────────────────────────────────────────┐
+│  頂部導航列 (HUD)                        │
+│  [調查案件] [技能樹] [裝備] [基地] [狀態]  │
+├─────────────────────────────────────────┤
+│                                         │
+│  主場景區 (Phaser Scene)                 │
+│  - 案件列表場景                          │
+│  - 文字冒險場景（節點 + 選項）            │
+│  - 技能樹場景（技能網格 + 冷卻計時器）     │
+│  - 基地場景（設施圖塊 + 升級面板）        │
+│  - 小遊戲場景（彈幕/卡牌/接水管/節奏）    │
+│                                         │
+├─────────────────────────────────────────┤
+│  底部狀態列: 聲望 | 證據計數 | 當前 AI    │
+└─────────────────────────────────────────┘
+```
+
+### 5.2 場景對應
+
+| 場景 | CLI 對應 | API 端點 | 說明 |
+|---|---|---|---|
+| MainMenuScene | 主選單 | — | 像素風格標題畫面 |
+| CaseListScene | 案件列表 | `GET /api/missions` | 任務卡片清單 |
+| InvestigationScene | 節點閱讀+選項 | `POST /api/investigations/advance` | 文字泡+選項按鈕+動畫 |
+| SkillTreeScene | 技能清單 | `GET /api/players/:id/skills` | 技能網格+解鎖特效 |
+| BaseScene | 防禦基地 | `GET /api/bases/:id` | 設施圖塊放置+升級 |
+| MiniGameScene | — | `POST /api/minigames/result` | 全前端執行+結果回傳 |
+| ProfileScene | 角色狀態 | `GET /api/players/:id` | 雷達圖+屬性面板 |
+
+### 5.3 前後端通訊流程
+
+```
+Phaser UI ──HTTP JSON──→ Go REST API ──→ Usecase ──→ Domain
+    ↑                         │
+    └─── JSON response ───────┘
+```
+
+- 所有畫面切換先呼叫 API 取得最新狀態
+- 小遊戲在前端完整執行，結束後將分數送回後端驗證
+- 未來可加入 WebSocket 做即時推播（直播宣導功能）

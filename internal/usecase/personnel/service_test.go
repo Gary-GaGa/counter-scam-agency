@@ -47,3 +47,103 @@ func TestSkillFlow(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Greater(t, activateRes.CooldownRemaining, 0)
 }
+
+func TestListSkills(t *testing.T) {
+	repo := &playerRepo{players: map[string]*domain.Player{}}
+	skills := []domain.Skill{
+		{ID: "s1", Name: "Alpha", CooldownSeconds: 3},
+		{ID: "s2", Name: "Beta", CooldownSeconds: 5},
+	}
+	svc := NewService(repo, skills)
+	player := domain.NewPlayer("player-1")
+	repo.players[player.ID] = player
+
+	result, err := svc.ListSkills(context.Background(), player.ID)
+	assert.NoError(t, err)
+	assert.Len(t, result, 2)
+}
+
+func TestListSkills_PlayerNotFound(t *testing.T) {
+	repo := &playerRepo{players: map[string]*domain.Player{}}
+	svc := NewService(repo, nil)
+
+	_, err := svc.ListSkills(context.Background(), "missing")
+	assert.ErrorIs(t, err, ErrPlayerNotFound)
+}
+
+func TestTickSkillCooldowns(t *testing.T) {
+	repo := &playerRepo{players: map[string]*domain.Player{}}
+	skill := domain.Skill{
+		ID:                 "skill-1",
+		Name:               "Rapid",
+		CooldownSeconds:    10,
+		ReputationRequired: 0,
+	}
+	svc := NewService(repo, []domain.Skill{skill})
+	player := domain.NewPlayer("player-1")
+	repo.players[player.ID] = player
+
+	_, err := svc.UnlockSkill(context.Background(), player.ID, "skill-1")
+	assert.NoError(t, err)
+	_, err = svc.EquipSkill(context.Background(), player.ID, "skill-1")
+	assert.NoError(t, err)
+	_, err = svc.ActivateSkill(context.Background(), player.ID, "skill-1")
+	assert.NoError(t, err)
+
+	result, err := svc.TickSkillCooldowns(context.Background(), player.ID, 5)
+	assert.NoError(t, err)
+	assert.Equal(t, player.ID, result.PlayerID)
+}
+
+func TestTickSkillCooldowns_PlayerNotFound(t *testing.T) {
+	repo := &playerRepo{players: map[string]*domain.Player{}}
+	svc := NewService(repo, nil)
+
+	_, err := svc.TickSkillCooldowns(context.Background(), "missing", 5)
+	assert.ErrorIs(t, err, ErrPlayerNotFound)
+}
+
+func TestEquipSkill_NotUnlocked(t *testing.T) {
+	repo := &playerRepo{players: map[string]*domain.Player{}}
+	skill := domain.Skill{
+		ID:                 "skill-1",
+		Name:               "Rapid",
+		CooldownSeconds:    5,
+		ReputationRequired: 100,
+	}
+	svc := NewService(repo, []domain.Skill{skill})
+	player := domain.NewPlayer("player-1")
+	repo.players[player.ID] = player
+
+	_, err := svc.EquipSkill(context.Background(), player.ID, "skill-1")
+	assert.ErrorIs(t, err, ErrSkillLocked)
+}
+
+func TestActivateSkill_NotEquipped(t *testing.T) {
+	repo := &playerRepo{players: map[string]*domain.Player{}}
+	skill := domain.Skill{
+		ID:                 "skill-1",
+		Name:               "Rapid",
+		CooldownSeconds:    5,
+		ReputationRequired: 0,
+	}
+	svc := NewService(repo, []domain.Skill{skill})
+	player := domain.NewPlayer("player-1")
+	repo.players[player.ID] = player
+
+	_, err := svc.UnlockSkill(context.Background(), player.ID, "skill-1")
+	assert.NoError(t, err)
+
+	_, err = svc.ActivateSkill(context.Background(), player.ID, "skill-1")
+	assert.ErrorIs(t, err, ErrSkillNotEquipped)
+}
+
+func TestUnlockSkill_SkillNotFound(t *testing.T) {
+	repo := &playerRepo{players: map[string]*domain.Player{}}
+	svc := NewService(repo, nil)
+	player := domain.NewPlayer("player-1")
+	repo.players[player.ID] = player
+
+	_, err := svc.UnlockSkill(context.Background(), player.ID, "nonexistent")
+	assert.ErrorIs(t, err, ErrSkillNotFound)
+}

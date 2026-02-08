@@ -1,6 +1,13 @@
 package defense
 
-import "go.mongodb.org/mongo-driver/mongo"
+import (
+	domain "counter-scam-agency/internal/domain/defense"
+
+	"go.mongodb.org/mongo-driver/mongo"
+)
+
+// Compile-time interface guard.
+var _ domain.BaseRepository = (*MongoRepository)(nil)
 
 // MongoRepository stores defense base data in MongoDB.
 type MongoRepository struct {

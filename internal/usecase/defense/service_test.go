@@ -64,3 +64,90 @@ func TestAddFacility(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, updated.Facilities, 1)
 }
+
+func TestGetBase(t *testing.T) {
+	repo := &baseRepo{bases: map[string]*domainDefense.Base{}}
+	svc := usecaseDefense.NewService(repo)
+
+	_, err := svc.CreateBase(context.Background(), "base-1", "player-1", 2)
+	assert.NoError(t, err)
+
+	result, err := svc.GetBase(context.Background(), "base-1")
+	assert.NoError(t, err)
+	assert.Equal(t, "base-1", result.ID)
+	assert.Equal(t, "player-1", result.OwnerID)
+}
+
+func TestGetBase_NotFound(t *testing.T) {
+	repo := &baseRepo{bases: map[string]*domainDefense.Base{}}
+	svc := usecaseDefense.NewService(repo)
+
+	_, err := svc.GetBase(context.Background(), "missing")
+	assert.ErrorIs(t, err, usecaseDefense.ErrBaseNotFound)
+}
+
+func TestCreateBase_Duplicate(t *testing.T) {
+	repo := &baseRepo{bases: map[string]*domainDefense.Base{}}
+	svc := usecaseDefense.NewService(repo)
+
+	_, err := svc.CreateBase(context.Background(), "base-1", "player-1", 2)
+	assert.NoError(t, err)
+
+	_, err = svc.CreateBase(context.Background(), "base-1", "player-1", 2)
+	assert.ErrorIs(t, err, usecaseDefense.ErrBaseExists)
+}
+
+func TestUpgradeFacility(t *testing.T) {
+	repo := &baseRepo{bases: map[string]*domainDefense.Base{}}
+	svc := usecaseDefense.NewService(repo)
+
+	_, err := svc.CreateBase(context.Background(), "base-1", "player-1", 2)
+	assert.NoError(t, err)
+
+	_, err = svc.AddFacility(context.Background(), "base-1", dto.FacilityInput{
+		ID:       "fac-1",
+		Type:     "Firewall",
+		Name:     "Starter Firewall",
+		Level:    1,
+		MaxLevel: 3,
+	})
+	assert.NoError(t, err)
+
+	result, err := svc.UpgradeFacility(context.Background(), "base-1", "fac-1")
+	assert.NoError(t, err)
+	assert.Equal(t, 2, result.Facilities[0].Level)
+}
+
+func TestUpgradeFacility_BaseNotFound(t *testing.T) {
+	repo := &baseRepo{bases: map[string]*domainDefense.Base{}}
+	svc := usecaseDefense.NewService(repo)
+
+	_, err := svc.UpgradeFacility(context.Background(), "missing", "fac-1")
+	assert.ErrorIs(t, err, usecaseDefense.ErrBaseNotFound)
+}
+
+func TestAddFacility_Full(t *testing.T) {
+	repo := &baseRepo{bases: map[string]*domainDefense.Base{}}
+	svc := usecaseDefense.NewService(repo)
+
+	_, err := svc.CreateBase(context.Background(), "base-1", "player-1", 1)
+	assert.NoError(t, err)
+
+	_, err = svc.AddFacility(context.Background(), "base-1", dto.FacilityInput{
+		ID: "fac-1", Type: "Firewall", Name: "FW", Level: 1, MaxLevel: 2,
+	})
+	assert.NoError(t, err)
+
+	_, err = svc.AddFacility(context.Background(), "base-1", dto.FacilityInput{
+		ID: "fac-2", Type: "Scanner", Name: "SC", Level: 1, MaxLevel: 2,
+	})
+	assert.ErrorIs(t, err, usecaseDefense.ErrFacilityFull)
+}
+
+func TestUpgradeSecurity_BaseNotFound(t *testing.T) {
+	repo := &baseRepo{bases: map[string]*domainDefense.Base{}}
+	svc := usecaseDefense.NewService(repo)
+
+	_, err := svc.UpgradeSecurity(context.Background(), "missing", 5)
+	assert.ErrorIs(t, err, usecaseDefense.ErrBaseNotFound)
+}

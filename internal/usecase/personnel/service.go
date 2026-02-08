@@ -7,7 +7,11 @@ import (
 
 	domain "counter-scam-agency/internal/domain/personnel"
 	"counter-scam-agency/internal/usecase/dto"
+	portin "counter-scam-agency/internal/usecase/port/in"
 )
+
+// Compile-time interface guard.
+var _ portin.PersonnelUsecase = (*Service)(nil)
 
 var (
 	ErrPlayerNotFound   = errors.New("player not found")

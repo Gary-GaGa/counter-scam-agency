@@ -7,7 +7,11 @@ import (
 
 	"counter-scam-agency/internal/domain/defense"
 	"counter-scam-agency/internal/usecase/dto"
+	portin "counter-scam-agency/internal/usecase/port/in"
 )
+
+// Compile-time interface guard.
+var _ portin.DefenseUsecase = (*Service)(nil)
 
 var (
 	ErrBaseNotFound = errors.New("base not found")

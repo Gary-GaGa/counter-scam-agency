@@ -38,7 +38,13 @@
 - [x] **數位防禦基地**：基地建設與設施升級 CLI 介面
 - [x] **受害者心理側寫**：心理狀態分析與應對策略建議機制
 - [x] CLI：冒險模式入口（`cmd/adventure`）
-- [ ] Ebiten UI：案件面板、推理棋盤、技能樹介面
+- [ ] **HTTP REST API**：建立後端 API 供 Phaser.js 前端呼叫
+    - [ ] Investigation endpoints (start, advance, submit, complete)
+    - [ ] Personnel endpoints (create, get, equip, skills)
+    - [ ] Defense endpoints (create, get, upgrade, add facility)
+- [ ] **Phaser.js Web UI**：像素風格 2D 遊戲前端
+    - [ ] 案件面板、推理棋盤、技能樹介面
+    - [ ] 基地建設視覺化
 - [ ] 直播宣導 / 情報擴散玩法
 - [ ] **小遊戲開發**：
     - [ ] 矛盾擊破 (Logic) - 彈幕射擊玩法

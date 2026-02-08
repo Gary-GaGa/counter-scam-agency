@@ -1,6 +1,13 @@
 package mission
 
-import "go.mongodb.org/mongo-driver/mongo"
+import (
+	"counter-scam-agency/internal/domain/intelligence"
+
+	"go.mongodb.org/mongo-driver/mongo"
+)
+
+// Compile-time interface guard.
+var _ intelligence.MissionRepository = (*MongoRepository)(nil)
 
 // MongoRepository stores mission data in MongoDB.
 type MongoRepository struct {

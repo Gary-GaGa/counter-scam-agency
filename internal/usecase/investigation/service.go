@@ -2,13 +2,18 @@ package investigation
 
 import (
 	"context"
+	"errors"
+	"fmt"
+
 	"counter-scam-agency/internal/domain/intelligence"
 	"counter-scam-agency/internal/domain/operation"
 	"counter-scam-agency/internal/domain/personnel"
 	"counter-scam-agency/internal/usecase/dto"
-	"errors"
-	"fmt"
+	portin "counter-scam-agency/internal/usecase/port/in"
 )
+
+// Compile-time interface guard.
+var _ portin.InvestigationUsecase = (*Service)(nil)
 
 var (
 	ErrInvestigationNotFinished = errors.New("investigation not finished")

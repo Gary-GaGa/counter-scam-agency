@@ -1,6 +1,13 @@
 package player
 
-import "go.mongodb.org/mongo-driver/mongo"
+import (
+	"counter-scam-agency/internal/domain/personnel"
+
+	"go.mongodb.org/mongo-driver/mongo"
+)
+
+// Compile-time interface guard.
+var _ personnel.PlayerRepository = (*MongoRepository)(nil)
 
 // MongoRepository stores player data in MongoDB.
 type MongoRepository struct {
