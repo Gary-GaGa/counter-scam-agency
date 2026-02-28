@@ -25,22 +25,28 @@ export class MainMenuScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     const cx = GAME_WIDTH / 2;
+    const leftCol = cx - 150;
+    const rightCol = cx + 150;
 
-    createButton(this, cx, 320, '📋 開始調查', () => {
+    createButton(this, leftCol, 310, '📋 開始調查', () => {
       this.scene.start('CaseListScene');
-    }, 280, 52);
+    }, 260, 48);
 
-    createButton(this, cx, 390, '🌳 技能樹', () => {
+    createButton(this, rightCol, 310, '🌳 技能樹', () => {
       this.scene.start('SkillTreeScene');
-    }, 280, 52);
+    }, 260, 48);
 
-    createButton(this, cx, 460, '👤 角色狀態', () => {
+    createButton(this, leftCol, 380, '👤 角色狀態', () => {
       this.scene.start('ProfileScene');
-    }, 280, 52);
+    }, 260, 48);
 
-    createButton(this, cx, 530, '🏰 防禦基地', () => {
+    createButton(this, rightCol, 380, '🏰 防禦基地', () => {
       this.scene.start('BaseScene');
-    }, 280, 52);
+    }, 260, 48);
+
+    createButton(this, cx, 460, '⚡ 矛盾擊破（小遊戲）', () => {
+      this.scene.start('ContradictionScene');
+    }, 300, 52);
 
     // Version tag
     this.add.text(GAME_WIDTH - 16, GAME_HEIGHT - 16, 'MVP v0.1', {
