@@ -19,7 +19,8 @@ func main() {
 
 	client, err := mongoinfra.NewClient(ctx, cfg)
 	if err != nil {
-		panic(err)
+		fmt.Fprintf(os.Stderr, "mongo connect: %v\n", err)
+		os.Exit(1)
 	}
 	defer func() {
 		_ = mongoinfra.Disconnect(ctx, client)
@@ -27,14 +28,16 @@ func main() {
 
 	db, err := mongoinfra.NewDatabase(client, cfg)
 	if err != nil {
-		panic(err)
+		fmt.Fprintf(os.Stderr, "mongo database: %v\n", err)
+		os.Exit(1)
 	}
 
 	repo := mission.NewMongoRepository(db)
 	missions := seedMissions()
 	for _, m := range missions {
 		if err := repo.Save(ctx, m); err != nil {
-			panic(err)
+			fmt.Fprintf(os.Stderr, "seed mission: %v\n", err)
+			os.Exit(1)
 		}
 	}
 

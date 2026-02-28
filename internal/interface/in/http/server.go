@@ -2,11 +2,17 @@ package http
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"regexp"
 
 	portin "counter-scam-agency/internal/usecase/port/in"
 )
+
+const maxBodySize = 1 << 20 // 1 MB
+
+var validID = regexp.MustCompile(`^[a-zA-Z0-9_-]{1,128}$`)
 
 // Server is the HTTP REST API server that wraps usecase ports.
 type Server struct {
@@ -46,7 +52,9 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("POST /api/investigations/{id}/evidence", s.handleSubmitEvidence)
 	s.mux.HandleFunc("POST /api/investigations/{id}/complete", s.handleCompleteInvestigation)
 
-	// Personnel / Skill endpoints.
+	// Personnel / Player & Skill endpoints.
+	s.mux.HandleFunc("POST /api/players", s.handleCreatePlayer)
+	s.mux.HandleFunc("GET /api/players/{id}", s.handleGetPlayer)
 	s.mux.HandleFunc("GET /api/players/{id}/skills", s.handleListSkills)
 	s.mux.HandleFunc("POST /api/players/{id}/skills/{skillID}/unlock", s.handleUnlockSkill)
 	s.mux.HandleFunc("POST /api/players/{id}/skills/{skillID}/equip", s.handleEquipSkill)
@@ -77,6 +85,24 @@ func writeError(w http.ResponseWriter, status int, msg string) {
 
 // decodeJSON reads and decodes a JSON request body into dst.
 func decodeJSON(r *http.Request, dst any) error {
+	r.Body = http.MaxBytesReader(nil, r.Body, maxBodySize)
 	defer r.Body.Close()
-	return json.NewDecoder(r.Body).Decode(dst)
+	dec := json.NewDecoder(r.Body)
+	dec.DisallowUnknownFields()
+	return dec.Decode(dst)
+}
+
+// internalError logs the real error and returns a generic message to the client.
+func internalError(w http.ResponseWriter, handler string, err error) {
+	log.Printf("%s: %v", handler, err)
+	writeError(w, http.StatusInternalServerError, "internal error")
+}
+
+// validatePathID checks that a path parameter is a safe identifier.
+func validatePathID(w http.ResponseWriter, id, name string) bool {
+	if !validID.MatchString(id) {
+		writeError(w, http.StatusBadRequest, fmt.Sprintf("invalid %s", name))
+		return false
+	}
+	return true
 }

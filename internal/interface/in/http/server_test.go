@@ -68,6 +68,22 @@ type stubPersonnel struct {
 	skills []dto.SkillSummary
 }
 
+func (s *stubPersonnel) CreatePlayer(_ context.Context, playerID string) (*dto.PlayerSummary, error) {
+	return &dto.PlayerSummary{
+		ID:         playerID,
+		Reputation: 0,
+		Stats:      dto.StatsSummary{Logic: 10, Tech: 10, Charisma: 10, Resilience: 10},
+	}, nil
+}
+
+func (s *stubPersonnel) GetPlayer(_ context.Context, playerID string) (*dto.PlayerSummary, error) {
+	return &dto.PlayerSummary{
+		ID:         playerID,
+		Reputation: 50,
+		Stats:      dto.StatsSummary{Logic: 12, Tech: 10, Charisma: 11, Resilience: 10},
+	}, nil
+}
+
 func (s *stubPersonnel) ListSkills(_ context.Context, _ string) ([]dto.SkillSummary, error) {
 	return s.skills, nil
 }
@@ -212,4 +228,25 @@ func TestGetBase(t *testing.T) {
 	srv.Handler().ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestCreatePlayer(t *testing.T) {
+	srv, _, _, _ := newTestServer()
+	body, _ := json.Marshal(map[string]string{"playerId": "p1"})
+	req := httptest.NewRequest(http.MethodPost, "/api/players", bytes.NewReader(body))
+	w := httptest.NewRecorder()
+	srv.Handler().ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusCreated, w.Code)
+	assert.Contains(t, w.Body.String(), "p1")
+}
+
+func TestGetPlayer(t *testing.T) {
+	srv, _, _, _ := newTestServer()
+	req := httptest.NewRequest(http.MethodGet, "/api/players/p1", nil)
+	w := httptest.NewRecorder()
+	srv.Handler().ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Contains(t, w.Body.String(), "p1")
 }
