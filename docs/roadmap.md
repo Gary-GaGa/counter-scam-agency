@@ -44,12 +44,16 @@
     - [x] Defense endpoints (create, get, upgrade, add facility)
     - [x] CORS middleware（支援 Phaser.js 跨域請求）
     - [x] `cmd/api` 伺服器入口（MongoDB 連接、優雅關機）
-- [ ] **Phaser.js Web UI**：像素風格 2D 遊戲前端
-    - [ ] 案件面板、推理棋盤、技能樹介面
-    - [ ] 基地建設視覺化
+- [x] **Phaser.js Web UI**：像素風格 2D 遊戲前端
+    - [x] 案件面板（CaseListScene）、調查場景（InvestigationScene）
+    - [x] 技能樹介面（SkillTreeScene）
+    - [x] 角色狀態（ProfileScene）
+    - [x] 基地建設視覺化（BaseScene）
+    - [x] 主選單與底部導航列
+- [x] **安全加固**：HTTP 安全標頭、MaxBytesReader、路徑驗證、錯誤訊息遮蔽
 - [ ] 直播宣導 / 情報擴散玩法
-- [ ] **小遊戲開發**：
-    - [ ] 矛盾擊破 (Logic) - 彈幕射擊玩法
+- [x] **小遊戲開發**：
+    - [x] 矛盾擊破 (Logic) - 彈幕射擊玩法（ContradictionScene）
     - [ ] 訊號追蹤 (Tech) - 接水管/駭客玩法
     - [ ] 談判牌局 (Charisma) - 卡牌對戰玩法
     - [ ] 心靈調適 (Resilience) - 節奏/休閒玩法

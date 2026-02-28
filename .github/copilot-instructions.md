@@ -210,3 +210,5 @@ npx tsc --noEmit
 | InvestigationScene | 調查場景 | 文字冒險核心玩法 |
 | SkillTreeScene | 技能樹 | 技能視覺化 + 解鎖/裝備/啟動 |
 | ProfileScene | 角色狀態 | 屬性值 + 聲望 + AI 狀態 |
+| BaseScene | 防禦基地 | 設施建設 + 升級 + 安全等級 |
+| ContradictionScene | 矛盾擊破 | Logic 彈幕射擊小遊戲 |
