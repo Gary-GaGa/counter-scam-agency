@@ -8,6 +8,7 @@ import type {
   PlayerSummary,
   SkillSummary,
   SkillActionResult,
+  BaseSummary,
 } from './types';
 
 const BASE_URL = '/api';
@@ -109,6 +110,52 @@ export function equipSkill(playerId: string, skillId: string): Promise<SkillActi
 
 export function activateSkill(playerId: string, skillId: string): Promise<SkillActionResult> {
   return request<SkillActionResult>(`/players/${playerId}/skills/${skillId}/activate`, {
+    method: 'POST',
+  });
+}
+
+// --- Defense Base ---
+
+export function createBase(
+  baseId: string,
+  ownerId: string,
+  slots: number,
+): Promise<BaseSummary> {
+  return request<BaseSummary>('/bases', {
+    method: 'POST',
+    body: JSON.stringify({ baseId, ownerId, slots }),
+  });
+}
+
+export function getBase(baseId: string): Promise<BaseSummary> {
+  return request<BaseSummary>(`/bases/${baseId}`);
+}
+
+export function addFacility(
+  baseId: string,
+  facility: { id: string; type: string; name: string; level: number; maxLevel: number; description: string },
+): Promise<BaseSummary> {
+  return request<BaseSummary>(`/bases/${baseId}/facilities`, {
+    method: 'POST',
+    body: JSON.stringify(facility),
+  });
+}
+
+export function upgradeSecurityLevel(
+  baseId: string,
+  maxLevel: number,
+): Promise<BaseSummary> {
+  return request<BaseSummary>(`/bases/${baseId}/security/upgrade`, {
+    method: 'POST',
+    body: JSON.stringify({ maxLevel }),
+  });
+}
+
+export function upgradeFacility(
+  baseId: string,
+  facilityId: string,
+): Promise<BaseSummary> {
+  return request<BaseSummary>(`/bases/${baseId}/facilities/${facilityId}/upgrade`, {
     method: 'POST',
   });
 }
