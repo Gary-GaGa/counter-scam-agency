@@ -212,3 +212,6 @@ npx tsc --noEmit
 | ProfileScene | 角色狀態 | 屬性值 + 聲望 + AI 狀態 |
 | BaseScene | 防禦基地 | 設施建設 + 升級 + 安全等級 |
 | ContradictionScene | 矛盾擊破 | Logic 彈幕射擊小遊戲 |
+| SignalTraceScene | 訊號追蹤 | Tech 接水管解謎小遊戲 |
+| NegotiationScene | 談判牌局 | Charisma 卡牌對戰小遊戲 |
+| MentalRecoveryScene | 心靈調適 | Resilience 情緒泡泡節奏小遊戲 |

@@ -54,9 +54,9 @@
 - [ ] 直播宣導 / 情報擴散玩法
 - [x] **小遊戲開發**：
     - [x] 矛盾擊破 (Logic) - 彈幕射擊玩法（ContradictionScene）
-    - [ ] 訊號追蹤 (Tech) - 接水管/駭客玩法
-    - [ ] 談判牌局 (Charisma) - 卡牌對戰玩法
-    - [ ] 心靈調適 (Resilience) - 節奏/休閒玩法
+    - [x] 訊號追蹤 (Tech) - 接水管解謎玩法（SignalTraceScene）
+    - [x] 談判牌局 (Charisma) - 卡牌對戰玩法（NegotiationScene）
+    - [x] 心靈調適 (Resilience) - 情緒泡泡節奏玩法（MentalRecoveryScene）
 
 ## Phase 3 — Content Expansion
 - [ ] 新案件章節：情感攻防、高科技對決、跨國詐團
