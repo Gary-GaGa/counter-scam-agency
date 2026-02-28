@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { Colors, GAME_WIDTH, GAME_HEIGHT } from '../ui/constants';
 import { createButton, createTitle } from '../ui/components';
 import { gameState, type GameStateData } from '../services/gameState';
+import { isUsingMock } from '../services/api';
 
 export class MainMenuScene extends Phaser.Scene {
   private particles: Phaser.GameObjects.Rectangle[] = [];
@@ -136,10 +137,15 @@ export class MainMenuScene extends Phaser.Scene {
       this.scene.restart();
     });
 
-    // 版本
-    this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 10, 'MVP v0.2 — Demo Build', {
+    // 版本 + 連線狀態
+    const versionText = this.add.text(GAME_WIDTH / 2, GAME_HEIGHT - 10, 'MVP v0.3 — 載入中...', {
       fontFamily: 'monospace', fontSize: '10px', color: '#333355',
     }).setOrigin(0.5, 1);
+
+    isUsingMock().then(mock => {
+      versionText.setText(mock ? 'MVP v0.3 — 離線模式 🔌' : 'MVP v0.3 — 已連線後端 🟢');
+      versionText.setColor(mock ? '#666688' : '#53d769');
+    });
   }
 
   private drawProgressBar(state: GameStateData): void {

@@ -103,10 +103,11 @@ class GameState {
   }
 
   /**
-   * 記錄小遊戲結果。回傳屬性提升量（可能為 0）。
+   * 記錄小遊戲結果。回傳屬性提升量與增量（可能為 0）。
    */
-  recordMiniGame(game: MiniGameKey, score: number): { statName: StatKey; bonus: number; isNewBest: boolean } {
+  recordMiniGame(game: MiniGameKey, score: number): { statName: StatKey; bonus: number; delta: number; isNewBest: boolean } {
     const current = this.data.miniGameBest[game];
+    const oldBonus = current ? calcStatBonus(current.score) : 0;
     const isNewBest = !current || score > current.score;
 
     if (isNewBest) {
@@ -123,10 +124,11 @@ class GameState {
     const statName = GAME_STAT_MAP[game];
     const bestScore = this.data.miniGameBest[game]!.score;
     const bonus = calcStatBonus(bestScore);
+    const delta = bonus - oldBonus;
     this.data.stats[statName] = 10 + bonus; // 基礎 10 + 小遊戲加成
 
     this.save();
-    return { statName, bonus, isNewBest };
+    return { statName, bonus, delta, isNewBest };
   }
 
   addReputation(amount: number): void {
