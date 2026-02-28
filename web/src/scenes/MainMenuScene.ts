@@ -44,9 +44,26 @@ export class MainMenuScene extends Phaser.Scene {
       this.scene.start('BaseScene');
     }, 260, 48);
 
-    createButton(this, cx, 460, '⚡ 矛盾擊破（小遊戲）', () => {
+    // 小遊戲區塊
+    this.add.text(cx, 440, '— 訓練小遊戲 —', {
+      fontFamily: 'monospace', fontSize: '14px', color: '#8888aa',
+    }).setOrigin(0.5);
+
+    createButton(this, leftCol, 480, '⚡ 矛盾擊破', () => {
       this.scene.start('ContradictionScene');
-    }, 300, 52);
+    }, 260, 42);
+
+    createButton(this, rightCol, 480, '🔌 訊號追蹤', () => {
+      this.scene.start('SignalTraceScene');
+    }, 260, 42);
+
+    createButton(this, leftCol, 540, '🃏 談判牌局', () => {
+      this.scene.start('NegotiationScene');
+    }, 260, 42);
+
+    createButton(this, rightCol, 540, '🧘 心靈調適', () => {
+      this.scene.start('MentalRecoveryScene');
+    }, 260, 42);
 
     // Version tag
     this.add.text(GAME_WIDTH - 16, GAME_HEIGHT - 16, 'MVP v0.1', {
