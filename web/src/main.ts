@@ -7,6 +7,9 @@ import { SkillTreeScene } from './scenes/SkillTreeScene';
 import { ProfileScene } from './scenes/ProfileScene';
 import { BaseScene } from './scenes/BaseScene';
 import { ContradictionScene } from './scenes/ContradictionScene';
+import { SignalTraceScene } from './scenes/SignalTraceScene';
+import { NegotiationScene } from './scenes/NegotiationScene';
+import { MentalRecoveryScene } from './scenes/MentalRecoveryScene';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -18,7 +21,7 @@ const config: Phaser.Types.Core.GameConfig = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [MainMenuScene, CaseListScene, InvestigationScene, SkillTreeScene, ProfileScene, BaseScene, ContradictionScene],
+  scene: [MainMenuScene, CaseListScene, InvestigationScene, SkillTreeScene, ProfileScene, BaseScene, ContradictionScene, SignalTraceScene, NegotiationScene, MentalRecoveryScene],
 };
 
 new Phaser.Game(config);
