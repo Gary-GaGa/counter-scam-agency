@@ -181,6 +181,15 @@ export async function getPlayer(_playerId: string): Promise<PlayerSummary> {
   return getPlayerSummary();
 }
 
+export async function updatePlayerStats(
+  _playerId: string,
+  _stats: { logic: number; tech: number; charisma: number; resilience: number },
+): Promise<PlayerSummary> {
+  await delay(SIM_DELAY);
+  // 離線模式下，gameState 已在 recordMiniGame 中更新屬性，此處直接回傳
+  return getPlayerSummary();
+}
+
 function getPlayerSummary(): PlayerSummary {
   const state = gameState.get();
   return {

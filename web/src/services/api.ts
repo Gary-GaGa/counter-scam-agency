@@ -28,8 +28,15 @@ async function shouldUseMock(): Promise<boolean> {
   }
   if (_useMock) {
     console.log('%c[CSA] 後端不可用，使用離線模式 🎮', 'color:#ffc107;font-weight:bold');
+  } else {
+    console.log('%c[CSA] 已連線至後端 🟢', 'color:#53d769;font-weight:bold');
   }
   return _useMock;
+}
+
+/** 回傳目前是否使用離線模式 */
+export async function isUsingMock(): Promise<boolean> {
+  return shouldUseMock();
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
@@ -115,6 +122,18 @@ export async function createPlayer(playerId: string): Promise<PlayerSummary> {
 export async function getPlayer(playerId: string): Promise<PlayerSummary> {
   if (await shouldUseMock()) return mockApi.getPlayer(playerId);
   return request<PlayerSummary>(`/players/${playerId}`);
+}
+
+/** 更新玩家基礎屬性（小遊戲成長用，傳送增量） */
+export async function updatePlayerStats(
+  playerId: string,
+  stats: { logic: number; tech: number; charisma: number; resilience: number },
+): Promise<PlayerSummary> {
+  if (await shouldUseMock()) return mockApi.updatePlayerStats(playerId, stats);
+  return request<PlayerSummary>(`/players/${playerId}/stats`, {
+    method: 'POST',
+    body: JSON.stringify(stats),
+  });
 }
 
 // --- Skills ---

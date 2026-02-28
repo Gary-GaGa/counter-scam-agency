@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
-import { Colors, GAME_WIDTH, GAME_HEIGHT } from '../ui/constants';
+import { Colors, GAME_WIDTH, GAME_HEIGHT, PLAYER_ID } from '../ui/constants';
 import { createButton, createTitle } from '../ui/components';
 import { gameState } from '../services/gameState';
+import { updatePlayerStats } from '../services/api';
 
 /**
  * 心靈調適（Mental Recovery）
@@ -334,6 +335,11 @@ export class MentalRecoveryScene extends Phaser.Scene {
       : `韌性 +${result.bonus}`, {
       fontFamily: 'monospace', fontSize: '16px', color: bonusColor,
     }).setOrigin(0.5).setDepth(301);
+
+    // 同步至後端
+    if (result.delta > 0) {
+      updatePlayerStats(PLAYER_ID, { logic: 0, tech: 0, charisma: 0, resilience: result.delta }).catch(() => {});
+    }
 
     const retryBtn = createButton(this, GAME_WIDTH / 2 - 120, 450, '🔄 再挑戰', () => {
       this.scene.restart();

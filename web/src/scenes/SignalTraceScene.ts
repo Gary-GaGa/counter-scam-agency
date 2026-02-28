@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
-import { Colors, GAME_WIDTH, GAME_HEIGHT } from '../ui/constants';
+import { Colors, GAME_WIDTH, GAME_HEIGHT, PLAYER_ID } from '../ui/constants';
 import { createButton, createTitle } from '../ui/components';
 import { gameState } from '../services/gameState';
+import { updatePlayerStats } from '../services/api';
 
 /**
  * 訊號追蹤（Signal Trace）
@@ -407,6 +408,11 @@ export class SignalTraceScene extends Phaser.Scene {
       : `技術 +${result.bonus}`, {
       fontFamily: 'monospace', fontSize: '16px', color: bonusColor,
     }).setOrigin(0.5).setDepth(301);
+
+    // 同步至後端
+    if (result.delta > 0) {
+      updatePlayerStats(PLAYER_ID, { logic: 0, tech: result.delta, charisma: 0, resilience: 0 }).catch(() => {});
+    }
 
     const retryBtn = createButton(this, GAME_WIDTH / 2 - 120, 430, '🔄 再挑戰', () => {
       this.scene.restart();

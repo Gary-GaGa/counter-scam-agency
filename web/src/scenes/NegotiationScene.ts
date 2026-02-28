@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
-import { Colors, GAME_WIDTH, GAME_HEIGHT } from '../ui/constants';
+import { Colors, GAME_WIDTH, GAME_HEIGHT, PLAYER_ID } from '../ui/constants';
 import { createButton, createTitle, createPanel } from '../ui/components';
 import { gameState } from '../services/gameState';
+import { updatePlayerStats } from '../services/api';
 
 /**
  * 談判牌局（Negotiation Cards）
@@ -269,6 +270,11 @@ export class NegotiationScene extends Phaser.Scene {
       : `交涉 +${result.bonus}`, {
       fontFamily: 'monospace', fontSize: '16px', color: bonusColor,
     }).setOrigin(0.5).setDepth(301);
+
+    // 同步至後端
+    if (result.delta > 0) {
+      updatePlayerStats(PLAYER_ID, { logic: 0, tech: 0, charisma: result.delta, resilience: 0 }).catch(() => {});
+    }
 
     const retryBtn = createButton(this, GAME_WIDTH / 2 - 120, 420, '🔄 再挑戰', () => {
       this.scene.restart();
