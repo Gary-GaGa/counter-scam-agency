@@ -4,24 +4,47 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Counter Scam Agency — 反詐情報局</title>
+  <meta name="description" content="反詐情報局 — 扮演反詐情報官，識破詐術、保護市民的像素風格 RPG 遊戲" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: #1a1a2e;
+      background: #0a0a16;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
       overflow: hidden;
+      font-family: monospace;
     }
     #game-container canvas {
       image-rendering: pixelated;
       image-rendering: crisp-edges;
     }
+    #loading {
+      position: absolute;
+      color: #555577;
+      font-size: 14px;
+      text-align: center;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
   </style>
 </head>
 <body>
+  <div id="loading">🛡️ 載入中...</div>
   <div id="game-container"></div>
   <script type="module" src="/src/main.ts"></script>
+  <script>
+    // 遊戲載入後隱藏 loading
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        const el = document.getElementById('loading');
+        if (el) el.style.display = 'none';
+      }, 500);
+    });
+  </script>
 </body>
 </html>

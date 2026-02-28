@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { Colors, GAME_WIDTH, GAME_HEIGHT } from '../ui/constants';
 import { createButton, createTitle } from '../ui/components';
+import { gameState } from '../services/gameState';
 
 /**
  * 心靈調適（Mental Recovery）
@@ -57,6 +58,7 @@ export class MentalRecoveryScene extends Phaser.Scene {
     this.isGameOver = false;
     this.bubbles = [];
 
+    this.cameras.main.fadeIn(300, 0, 0, 0);
     this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, Colors.bg);
 
     // HUD
@@ -325,12 +327,20 @@ export class MentalRecoveryScene extends Phaser.Scene {
       fontFamily: 'monospace', fontSize: '20px', color: '#ffc107',
     }).setOrigin(0.5).setDepth(301);
 
-    const retryBtn = createButton(this, GAME_WIDTH / 2 - 120, 430, '🔄 再挑戰', () => {
+    const result = gameState.recordMiniGame('mentalRecovery', this.score);
+    const bonusColor = result.isNewBest ? '#53d769' : '#8888aa';
+    this.add.text(GAME_WIDTH / 2, 385, result.isNewBest
+      ? `🆕 新紀錄！ 韌性 +${result.bonus}`
+      : `韌性 +${result.bonus}`, {
+      fontFamily: 'monospace', fontSize: '16px', color: bonusColor,
+    }).setOrigin(0.5).setDepth(301);
+
+    const retryBtn = createButton(this, GAME_WIDTH / 2 - 120, 450, '🔄 再挑戰', () => {
       this.scene.restart();
     }, 200, 48);
     retryBtn.setDepth(301);
 
-    const backBtn = createButton(this, GAME_WIDTH / 2 + 120, 430, '← 返回選單', () => {
+    const backBtn = createButton(this, GAME_WIDTH / 2 + 120, 450, '← 返回選單', () => {
       this.scene.start('MainMenuScene');
     }, 200, 48);
     backBtn.setDepth(301);

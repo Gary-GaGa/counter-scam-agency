@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { Colors, GAME_WIDTH, GAME_HEIGHT } from '../ui/constants';
 import { createButton, createTitle } from '../ui/components';
+import { gameState } from '../services/gameState';
 
 /**
  * 訊號追蹤（Signal Trace）
@@ -70,6 +71,7 @@ export class SignalTraceScene extends Phaser.Scene {
     this.timeLeft = GAME_DURATION;
     this.isGameOver = false;
 
+    this.cameras.main.fadeIn(300, 0, 0, 0);
     this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, Colors.bg);
 
     // HUD
@@ -398,12 +400,20 @@ export class SignalTraceScene extends Phaser.Scene {
       fontFamily: 'monospace', fontSize: '22px', color: '#ffc107',
     }).setOrigin(0.5).setDepth(301);
 
-    const retryBtn = createButton(this, GAME_WIDTH / 2 - 120, 410, '🔄 再挑戰', () => {
+    const result = gameState.recordMiniGame('signalTrace', this.score);
+    const bonusColor = result.isNewBest ? '#53d769' : '#8888aa';
+    this.add.text(GAME_WIDTH / 2, 365, result.isNewBest
+      ? `🆕 新紀錄！ 技術 +${result.bonus}`
+      : `技術 +${result.bonus}`, {
+      fontFamily: 'monospace', fontSize: '16px', color: bonusColor,
+    }).setOrigin(0.5).setDepth(301);
+
+    const retryBtn = createButton(this, GAME_WIDTH / 2 - 120, 430, '🔄 再挑戰', () => {
       this.scene.restart();
     }, 200, 48);
     retryBtn.setDepth(301);
 
-    const backBtn = createButton(this, GAME_WIDTH / 2 + 120, 410, '← 返回選單', () => {
+    const backBtn = createButton(this, GAME_WIDTH / 2 + 120, 430, '← 返回選單', () => {
       this.scene.start('MainMenuScene');
     }, 200, 48);
     backBtn.setDepth(301);
