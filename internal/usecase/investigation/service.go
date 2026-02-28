@@ -320,11 +320,12 @@ func (s *Service) CompleteInvestigation(ctx context.Context, investigationID str
 	}
 
 	return &dto.CompleteResult{
-		InvestigationID:  inv.ID,
-		PlayerID:         inv.PlayerID,
-		MissionID:        inv.MissionID,
-		Success:          success,
-		ReputationGained: gain,
+		InvestigationID:   inv.ID,
+		PlayerID:          inv.PlayerID,
+		MissionID:         inv.MissionID,
+		Success:           success,
+		ReputationGained:  gain,
+		EvidenceCollected: len(inv.CollectedEvidenceIDs),
 	}, nil
 }
 

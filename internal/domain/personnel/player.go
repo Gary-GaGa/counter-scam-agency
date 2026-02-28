@@ -43,6 +43,22 @@ func (p *Player) AddReputation(amount int) {
 	p.Reputation += amount
 }
 
+// AddStats increases the player's base stats. Negative values are ignored per field.
+func (p *Player) AddStats(logic, tech, charisma, resilience int) {
+	if logic > 0 {
+		p.Stats.Logic += logic
+	}
+	if tech > 0 {
+		p.Stats.Tech += tech
+	}
+	if charisma > 0 {
+		p.Stats.Charisma += charisma
+	}
+	if resilience > 0 {
+		p.Stats.Resilience += resilience
+	}
+}
+
 // IsModuleUnlocked checks whether a module has been unlocked.
 func (p *Player) IsModuleUnlocked(moduleID string) bool {
 	if len(p.UnlockedModuleIDs) == 0 {

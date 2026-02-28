@@ -107,6 +107,33 @@ type tickCooldownsRequest struct {
 	Seconds int `json:"seconds"`
 }
 
+type updateStatsRequest struct {
+	Logic      int `json:"logic"`
+	Tech       int `json:"tech"`
+	Charisma   int `json:"charisma"`
+	Resilience int `json:"resilience"`
+}
+
+// handleUpdateStats updates the player's base stats.
+func (s *Server) handleUpdateStats(w http.ResponseWriter, r *http.Request) {
+	playerID := r.PathValue("id")
+	if !validatePathID(w, playerID, "id") {
+		return
+	}
+	var req updateStatsRequest
+	if err := decodeJSON(r, &req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	result, err := s.personnel.UpdateStats(r.Context(), playerID, req.Logic, req.Tech, req.Charisma, req.Resilience)
+	if err != nil {
+		log.Printf("handleUpdateStats: %v", err)
+		writeError(w, http.StatusBadRequest, "failed to update stats")
+		return
+	}
+	writeJSON(w, http.StatusOK, result)
+}
+
 // handleTickCooldowns reduces cooldown timers for all skills.
 func (s *Server) handleTickCooldowns(w http.ResponseWriter, r *http.Request) {
 	playerID := r.PathValue("id")

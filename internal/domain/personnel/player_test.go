@@ -44,6 +44,22 @@ func TestAIPartnerPersonality(t *testing.T) {
 	assert.Equal(t, personnel.PersonalityBalanced, ai.Personality)
 }
 
+func TestPlayerAddStats(t *testing.T) {
+	player := personnel.NewPlayer("agent-009")
+	assert.Equal(t, 10, player.Stats.Logic)
+	assert.Equal(t, 10, player.Stats.Tech)
+
+	player.AddStats(3, 0, 2, 1)
+	assert.Equal(t, 13, player.Stats.Logic)
+	assert.Equal(t, 10, player.Stats.Tech)
+	assert.Equal(t, 12, player.Stats.Charisma)
+	assert.Equal(t, 11, player.Stats.Resilience)
+
+	// 負數不影響
+	player.AddStats(-5, -1, -1, -1)
+	assert.Equal(t, 13, player.Stats.Logic)
+}
+
 func TestPlayerSkillUnlockAndEquip(t *testing.T) {
 	player := personnel.NewPlayer("agent-008")
 	skill := personnel.Skill{

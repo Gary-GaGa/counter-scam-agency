@@ -44,6 +44,9 @@ func (s *Server) handleStartInvestigation(w http.ResponseWriter, r *http.Request
 		writeError(w, http.StatusBadRequest, "invalid request body")
 		return
 	}
+	if req.StartNodeID == "" {
+		req.StartNodeID = "start"
+	}
 	result, err := s.investigations.StartInvestigation(r.Context(), req.InvestigationID, req.PlayerID, req.MissionID, req.StartNodeID)
 	if err != nil {
 		log.Printf("handleStartInvestigation: %v", err)
