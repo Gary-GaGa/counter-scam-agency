@@ -5,9 +5,13 @@ import (
 	"fmt"
 	"os"
 
+	"counter-scam-agency/internal/domain/defense"
 	"counter-scam-agency/internal/domain/intelligence"
+	"counter-scam-agency/internal/domain/personnel"
 	mongoinfra "counter-scam-agency/internal/infrastructure/persistence/mongo"
+	defenserepo "counter-scam-agency/internal/interface/out/persistence/mongo/defense"
 	"counter-scam-agency/internal/interface/out/persistence/mongo/mission"
+	playerrepo "counter-scam-agency/internal/interface/out/persistence/mongo/player"
 )
 
 func main() {
@@ -40,8 +44,43 @@ func main() {
 			os.Exit(1)
 		}
 	}
-
 	fmt.Printf("seeded %d missions\n", len(missions))
+
+	// 建立預設玩家
+	playerRepo := playerrepo.NewMongoRepository(db)
+	existing, _ := playerRepo.FindByID(ctx, "player-1")
+	if existing == nil {
+		player := personnel.NewPlayer("player-1")
+		if err := playerRepo.Save(ctx, player); err != nil {
+			fmt.Fprintf(os.Stderr, "seed player: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Println("seeded player: player-1")
+	} else {
+		fmt.Println("player-1 already exists, skipped")
+	}
+
+	// 建立預設基地
+	baseRepo := defenserepo.NewMongoRepository(db)
+	existingBase, _ := baseRepo.FindByID(ctx, "base-1")
+	if existingBase == nil {
+		base := defense.NewBase("base-1", "player-1", 4)
+		base.AddFacility(defense.Facility{
+			ID:          "facility-firewall",
+			Type:        defense.FacilityTypeFirewall,
+			Name:        "基礎防火牆",
+			Level:       1,
+			MaxLevel:    5,
+			Description: "阻擋基本惡意流量",
+		})
+		if err := baseRepo.Save(ctx, base); err != nil {
+			fmt.Fprintf(os.Stderr, "seed base: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Println("seeded base: base-1")
+	} else {
+		fmt.Println("base-1 already exists, skipped")
+	}
 }
 
 func getenv(key, fallback string) string {
