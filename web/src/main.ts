@@ -6,6 +6,7 @@ import { InvestigationScene } from './scenes/InvestigationScene';
 import { SkillTreeScene } from './scenes/SkillTreeScene';
 import { ProfileScene } from './scenes/ProfileScene';
 import { BaseScene } from './scenes/BaseScene';
+import { ContradictionScene } from './scenes/ContradictionScene';
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
@@ -17,7 +18,7 @@ const config: Phaser.Types.Core.GameConfig = {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [MainMenuScene, CaseListScene, InvestigationScene, SkillTreeScene, ProfileScene, BaseScene],
+  scene: [MainMenuScene, CaseListScene, InvestigationScene, SkillTreeScene, ProfileScene, BaseScene, ContradictionScene],
 };
 
 new Phaser.Game(config);
