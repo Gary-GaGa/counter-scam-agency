@@ -32,6 +32,7 @@ Counter Scam Agency 是一款以防範詐騙為主題的角色扮演遊戲（RPG
 ```
 cmd/
   adventure/        # 文字冒險 CLI 入口
+  api/              # HTTP API 伺服器入口
   cli/              # 完整功能 CLI 入口
   seed-missions/    # 種子資料工具
 
@@ -40,6 +41,12 @@ internal/
   usecase/          # 應用層：用例服務、Port、DTO
   interface/        # 轉接層：HTTP Handler、Mongo Repository
   infrastructure/   # 基礎設施：MongoDB Client
+
+web/                # Phaser.js 前端（Vite + TypeScript）
+  src/
+    scenes/         # 遊戲場景（主選單、案件、調查、技能樹、狀態）
+    services/       # API 客戶端與型別定義
+    ui/             # 共用 UI 元件
 
 docs/
   architecture.md   # 系統架構文件
@@ -56,7 +63,14 @@ mongod --dbpath /path/to/data
 # 匯入種子任務
 go run cmd/seed-missions/main.go
 
-# 啟動完整 CLI（含基地、技能、模組管理）
+# 啟動 API 伺服器
+go run cmd/api/main.go
+
+# 啟動 Web 前端（另開終端）
+cd web && npm run dev
+# 開啟瀏覽器 http://localhost:5173
+
+# 或使用完整 CLI（含基地、技能、模組管理）
 go run cmd/cli/main.go
 
 # 或啟動精簡冒險模式
@@ -64,8 +78,11 @@ go run cmd/adventure/main.go
 ```
 
 ## 下一步
-1. 實作 Go HTTP API，將現有 Usecase 包成 REST 端點。
-2. 建立 Phaser.js 前端專案，像素風格場景與節點對話 UI。
-3. 串接前後端，完成網頁版可遊玩原型。
+1. ~~實作 Go HTTP API，將現有 Usecase 包成 REST 端點。~~ ✅
+2. ~~建立 Phaser.js 前端專案，像素風格場景與節點對話 UI。~~ ✅
+3. ~~串接前後端，完成網頁版可遊玩原型。~~ ✅
+4. 加入認證與授權機制。
+5. 實作小遊戲（矛盾擊破、訊號追蹤、談判牌局、心靈調適）。
+6. 完善像素風格美術資源。
 
 如欲參與或提出建議，歡迎提交 Issue 或 Pull Request。

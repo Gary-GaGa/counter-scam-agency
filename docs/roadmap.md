@@ -38,10 +38,12 @@
 - [x] **數位防禦基地**：基地建設與設施升級 CLI 介面
 - [x] **受害者心理側寫**：心理狀態分析與應對策略建議機制
 - [x] CLI：冒險模式入口（`cmd/adventure`）
-- [ ] **HTTP REST API**：建立後端 API 供 Phaser.js 前端呼叫
-    - [ ] Investigation endpoints (start, advance, submit, complete)
-    - [ ] Personnel endpoints (create, get, equip, skills)
-    - [ ] Defense endpoints (create, get, upgrade, add facility)
+- [x] **HTTP REST API**：建立後端 API 供 Phaser.js 前端呼叫
+    - [x] Investigation endpoints (start, advance, submit, complete)
+    - [x] Personnel endpoints (create, get, equip, skills)
+    - [x] Defense endpoints (create, get, upgrade, add facility)
+    - [x] CORS middleware（支援 Phaser.js 跨域請求）
+    - [x] `cmd/api` 伺服器入口（MongoDB 連接、優雅關機）
 - [ ] **Phaser.js Web UI**：像素風格 2D 遊戲前端
     - [ ] 案件面板、推理棋盤、技能樹介面
     - [ ] 基地建設視覺化
