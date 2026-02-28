@@ -27,6 +27,7 @@ export class InvestigationScene extends Phaser.Scene {
   }
 
   create(): void {
+    this.cameras.main.fadeIn(400, 0, 0, 0);
     this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, Colors.bg);
     this.uiGroup = this.add.group();
 

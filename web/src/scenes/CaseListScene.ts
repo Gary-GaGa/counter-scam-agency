@@ -3,6 +3,7 @@ import { Colors, GAME_WIDTH, GAME_HEIGHT, PLAYER_ID } from '../ui/constants';
 import { createButton, createTitle, createPanel, createNavBar } from '../ui/components';
 import { listMissions } from '../services/api';
 import type { MissionSummary } from '../services/types';
+import { gameState } from '../services/gameState';
 
 export class CaseListScene extends Phaser.Scene {
   constructor() {
@@ -10,6 +11,7 @@ export class CaseListScene extends Phaser.Scene {
   }
 
   create(): void {
+    this.cameras.main.fadeIn(400, 0, 0, 0);
     this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, Colors.bg);
     createTitle(this, GAME_WIDTH / 2, 40, '📋 案件面板', '26px');
     createNavBar(this);
@@ -49,11 +51,13 @@ export class CaseListScene extends Phaser.Scene {
 
     missions.forEach((mission, i) => {
       const y = startY + i * (cardHeight + gap) + cardHeight / 2;
+      const completed = gameState.get().completedMissions.includes(mission.id);
 
       createPanel(this, GAME_WIDTH / 2, y, cardWidth, cardHeight);
 
       // Title
-      this.add.text(GAME_WIDTH / 2 - cardWidth / 2 + 24, y - 36, mission.title, {
+      const titleStr = completed ? `✅ ${mission.title}` : mission.title;
+      this.add.text(GAME_WIDTH / 2 - cardWidth / 2 + 24, y - 36, titleStr, {
         fontFamily: 'monospace',
         fontSize: '20px',
         color: '#e94560',

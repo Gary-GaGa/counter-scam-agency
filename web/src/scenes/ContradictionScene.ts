@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { Colors, GAME_WIDTH, GAME_HEIGHT } from '../ui/constants';
 import { createButton, createTitle } from '../ui/components';
+import { gameState } from '../services/gameState';
 
 /**
  * 矛盾擊破（Contradiction Breaker）
@@ -71,6 +72,7 @@ export class ContradictionScene extends Phaser.Scene {
     this.isGameOver = false;
     this.usedStatements.clear();
 
+    this.cameras.main.fadeIn(300, 0, 0, 0);
     this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, Colors.bg);
 
     // HUD
@@ -306,12 +308,22 @@ export class ContradictionScene extends Phaser.Scene {
       fontFamily: 'monospace', fontSize: '22px', color: '#ffc107',
     }).setOrigin(0.5).setDepth(301);
 
-    const retryBtn = createButton(this, GAME_WIDTH / 2 - 120, 400, '🔄 再挑戰', () => {
+    // 記錄至遊戲狀態
+    const result = gameState.recordMiniGame('contradiction', this.score);
+    const statLabel = '邏輯';
+    const bonusColor = result.isNewBest ? '#53d769' : '#8888aa';
+    this.add.text(GAME_WIDTH / 2, 350, result.isNewBest
+      ? `🆕 新紀錄！ ${statLabel} +${result.bonus}`
+      : `${statLabel} +${result.bonus}`, {
+      fontFamily: 'monospace', fontSize: '16px', color: bonusColor,
+    }).setOrigin(0.5).setDepth(301);
+
+    const retryBtn = createButton(this, GAME_WIDTH / 2 - 120, 420, '🔄 再挑戰', () => {
       this.scene.restart();
     }, 200, 48);
     retryBtn.setDepth(301);
 
-    const backBtn = createButton(this, GAME_WIDTH / 2 + 120, 400, '← 返回選單', () => {
+    const backBtn = createButton(this, GAME_WIDTH / 2 + 120, 420, '← 返回選單', () => {
       this.scene.start('MainMenuScene');
     }, 200, 48);
     backBtn.setDepth(301);
