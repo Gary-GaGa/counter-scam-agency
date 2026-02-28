@@ -2,9 +2,13 @@ package dto
 
 // PlayerSummary represents a player for UI rendering.
 type PlayerSummary struct {
-	ID         string     `json:"id"`
-	Reputation int        `json:"reputation"`
-	Stats      StatsSummary `json:"stats"`
+	ID                   string       `json:"id"`
+	Reputation           int          `json:"reputation"`
+	Stats                StatsSummary `json:"stats"`
+	TotalStats           StatsSummary `json:"totalStats"`
+	PartnerPersonality   string       `json:"partnerPersonality"`
+	EquippedModules      []string     `json:"equippedModules"`
+	EquippedSkills       []string     `json:"equippedSkills"`
 }
 
 // StatsSummary represents player stats for UI rendering.
@@ -17,15 +21,16 @@ type StatsSummary struct {
 
 // SkillSummary represents an AI skill for UI rendering.
 type SkillSummary struct {
-	ID                string   `json:"id"`
-	Type              string   `json:"type"`
-	Name              string   `json:"name"`
-	Description       string   `json:"description"`
-	CooldownSeconds   int      `json:"cooldownSeconds"`
-	RequiredModuleIDs []string `json:"requiredModuleIds"`
-	Unlocked          bool     `json:"unlocked"`
-	Equipped          bool     `json:"equipped"`
-	CooldownRemaining int      `json:"cooldownRemaining"`
+	ID                 string   `json:"id"`
+	Type               string   `json:"type"`
+	Name               string   `json:"name"`
+	Description        string   `json:"description"`
+	CooldownSeconds    int      `json:"cooldownSeconds"`
+	RequiredModuleIDs  []string `json:"requiredModuleIds"`
+	ReputationRequired int      `json:"reputationRequired"`
+	Unlocked           bool     `json:"unlocked"`
+	Equipped           bool     `json:"equipped"`
+	CooldownRemaining  int      `json:"cooldownRemaining"`
 }
 
 // SkillActionResult summarizes a skill action outcome.

@@ -55,6 +55,7 @@ func (s *Server) registerRoutes() {
 	// Personnel / Player & Skill endpoints.
 	s.mux.HandleFunc("POST /api/players", s.handleCreatePlayer)
 	s.mux.HandleFunc("GET /api/players/{id}", s.handleGetPlayer)
+	s.mux.HandleFunc("POST /api/players/{id}/stats", s.handleUpdateStats)
 	s.mux.HandleFunc("GET /api/players/{id}/skills", s.handleListSkills)
 	s.mux.HandleFunc("POST /api/players/{id}/skills/{skillID}/unlock", s.handleUnlockSkill)
 	s.mux.HandleFunc("POST /api/players/{id}/skills/{skillID}/equip", s.handleEquipSkill)

@@ -78,15 +78,16 @@ func (s *Service) ListSkills(ctx context.Context, playerID string) ([]dto.SkillS
 	results := make([]dto.SkillSummary, 0, len(s.catalog))
 	for _, skill := range s.catalog {
 		results = append(results, dto.SkillSummary{
-			ID:                skill.ID,
-			Type:              string(skill.Type),
-			Name:              skill.Name,
-			Description:       skill.Description,
-			CooldownSeconds:   skill.CooldownSeconds,
-			RequiredModuleIDs: append([]string{}, skill.RequiredModuleIDs...),
-			Unlocked:          player.IsSkillUnlocked(skill.ID),
-			Equipped:          player.Partner != nil && player.Partner.HasSkill(skill.ID),
-			CooldownRemaining: getCooldown(player, skill.ID),
+			ID:                 skill.ID,
+			Type:               string(skill.Type),
+			Name:               skill.Name,
+			Description:        skill.Description,
+			CooldownSeconds:    skill.CooldownSeconds,
+			RequiredModuleIDs:  append([]string{}, skill.RequiredModuleIDs...),
+			ReputationRequired: skill.ReputationRequired,
+			Unlocked:           player.IsSkillUnlocked(skill.ID),
+			Equipped:           player.Partner != nil && player.Partner.HasSkill(skill.ID),
+			CooldownRemaining:  getCooldown(player, skill.ID),
 		})
 	}
 	return results, nil
@@ -166,6 +167,22 @@ func (s *Service) TickSkillCooldowns(ctx context.Context, playerID string, secon
 	return &dto.SkillActionResult{PlayerID: player.ID}, nil
 }
 
+// UpdateStats updates the player's base stats and persists.
+func (s *Service) UpdateStats(ctx context.Context, playerID string, logic, tech, charisma, resilience int) (*dto.PlayerSummary, error) {
+	player, err := s.players.FindByID(ctx, playerID)
+	if err != nil {
+		return nil, fmt.Errorf("find player: %w", err)
+	}
+	if player == nil {
+		return nil, ErrPlayerNotFound
+	}
+	player.AddStats(logic, tech, charisma, resilience)
+	if err := s.players.Save(ctx, player); err != nil {
+		return nil, fmt.Errorf("save player: %w", err)
+	}
+	return mapPlayer(player), nil
+}
+
 func (s *Service) loadPlayerAndSkill(ctx context.Context, playerID, skillID string) (*domain.Player, domain.Skill, error) {
 	player, err := s.players.FindByID(ctx, playerID)
 	if err != nil {
@@ -199,15 +216,39 @@ func getCooldown(player *domain.Player, skillID string) int {
 }
 
 func mapPlayer(player *domain.Player) *dto.PlayerSummary {
-	stats := player.GetTotalStats()
+	baseStats := player.Stats
+	totalStats := player.GetTotalStats()
+	personality := ""
+	var equippedModules []string
+	var equippedSkills []string
+	if player.Partner != nil {
+		personality = string(player.Partner.Personality)
+		equippedModules = player.Partner.InstalledModuleIDs()
+		equippedSkills = player.Partner.LearnedSkillIDs()
+	}
+	if equippedModules == nil {
+		equippedModules = []string{}
+	}
+	if equippedSkills == nil {
+		equippedSkills = []string{}
+	}
 	return &dto.PlayerSummary{
 		ID:         player.ID,
 		Reputation: player.Reputation,
 		Stats: dto.StatsSummary{
-			Logic:      stats.Logic,
-			Tech:       stats.Tech,
-			Charisma:   stats.Charisma,
-			Resilience: stats.Resilience,
+			Logic:      baseStats.Logic,
+			Tech:       baseStats.Tech,
+			Charisma:   baseStats.Charisma,
+			Resilience: baseStats.Resilience,
 		},
+		TotalStats: dto.StatsSummary{
+			Logic:      totalStats.Logic,
+			Tech:       totalStats.Tech,
+			Charisma:   totalStats.Charisma,
+			Resilience: totalStats.Resilience,
+		},
+		PartnerPersonality: personality,
+		EquippedModules:    equippedModules,
+		EquippedSkills:     equippedSkills,
 	}
 }

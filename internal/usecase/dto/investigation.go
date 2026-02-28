@@ -29,9 +29,10 @@ type SubmitEvidenceResult struct {
 
 // CompleteResult summarizes the investigation completion outcome.
 type CompleteResult struct {
-	InvestigationID  string `json:"investigationId"`
-	PlayerID         string `json:"playerId"`
-	MissionID        string `json:"missionId"`
-	Success          bool   `json:"success"`
-	ReputationGained int    `json:"reputationGained"`
+	InvestigationID   string `json:"investigationId"`
+	PlayerID          string `json:"playerId"`
+	MissionID         string `json:"missionId"`
+	Success           bool   `json:"success"`
+	ReputationGained  int    `json:"reputationGained"`
+	EvidenceCollected int    `json:"evidenceCollected"`
 }

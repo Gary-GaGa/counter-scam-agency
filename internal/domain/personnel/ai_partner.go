@@ -158,3 +158,21 @@ func (ai *AIPartner) GetTotalBonus() Stats {
 	}
 	return total
 }
+
+// InstalledModuleIDs returns the IDs of all installed modules.
+func (ai *AIPartner) InstalledModuleIDs() []string {
+	ids := make([]string, len(ai.Loadout))
+	for i, mod := range ai.Loadout {
+		ids[i] = mod.ID
+	}
+	return ids
+}
+
+// LearnedSkillIDs returns the IDs of all learned skills.
+func (ai *AIPartner) LearnedSkillIDs() []string {
+	ids := make([]string, len(ai.Skills))
+	for i, skill := range ai.Skills {
+		ids[i] = skill.ID
+	}
+	return ids
+}

@@ -70,17 +70,37 @@ type stubPersonnel struct {
 
 func (s *stubPersonnel) CreatePlayer(_ context.Context, playerID string) (*dto.PlayerSummary, error) {
 	return &dto.PlayerSummary{
-		ID:         playerID,
-		Reputation: 0,
-		Stats:      dto.StatsSummary{Logic: 10, Tech: 10, Charisma: 10, Resilience: 10},
+		ID:                 playerID,
+		Reputation:         0,
+		Stats:              dto.StatsSummary{Logic: 10, Tech: 10, Charisma: 10, Resilience: 10},
+		TotalStats:         dto.StatsSummary{Logic: 10, Tech: 10, Charisma: 10, Resilience: 10},
+		PartnerPersonality: "Balanced",
+		EquippedModules:    []string{},
+		EquippedSkills:     []string{},
 	}, nil
 }
 
 func (s *stubPersonnel) GetPlayer(_ context.Context, playerID string) (*dto.PlayerSummary, error) {
 	return &dto.PlayerSummary{
-		ID:         playerID,
-		Reputation: 50,
-		Stats:      dto.StatsSummary{Logic: 12, Tech: 10, Charisma: 11, Resilience: 10},
+		ID:                 playerID,
+		Reputation:         50,
+		Stats:              dto.StatsSummary{Logic: 12, Tech: 10, Charisma: 11, Resilience: 10},
+		TotalStats:         dto.StatsSummary{Logic: 12, Tech: 10, Charisma: 11, Resilience: 10},
+		PartnerPersonality: "Balanced",
+		EquippedModules:    []string{},
+		EquippedSkills:     []string{},
+	}, nil
+}
+
+func (s *stubPersonnel) UpdateStats(_ context.Context, playerID string, logic, tech, charisma, resilience int) (*dto.PlayerSummary, error) {
+	return &dto.PlayerSummary{
+		ID:                 playerID,
+		Reputation:         50,
+		Stats:              dto.StatsSummary{Logic: 10 + logic, Tech: 10 + tech, Charisma: 10 + charisma, Resilience: 10 + resilience},
+		TotalStats:         dto.StatsSummary{Logic: 10 + logic, Tech: 10 + tech, Charisma: 10 + charisma, Resilience: 10 + resilience},
+		PartnerPersonality: "Balanced",
+		EquippedModules:    []string{},
+		EquippedSkills:     []string{},
 	}, nil
 }
 

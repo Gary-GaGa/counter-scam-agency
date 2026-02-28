@@ -190,3 +190,25 @@ func TestGetPlayer_NotFound(t *testing.T) {
 	_, err := svc.GetPlayer(context.Background(), "missing")
 	assert.ErrorIs(t, err, ErrPlayerNotFound)
 }
+
+func TestUpdateStats(t *testing.T) {
+	repo := &playerRepo{players: map[string]*domain.Player{}}
+	svc := NewService(repo, nil)
+	player := domain.NewPlayer("player-1")
+	repo.players[player.ID] = player
+
+	result, err := svc.UpdateStats(context.Background(), player.ID, 3, 0, 2, 1)
+	assert.NoError(t, err)
+	assert.Equal(t, 13, result.Stats.Logic)
+	assert.Equal(t, 10, result.Stats.Tech)
+	assert.Equal(t, 12, result.Stats.Charisma)
+	assert.Equal(t, 11, result.Stats.Resilience)
+}
+
+func TestUpdateStats_PlayerNotFound(t *testing.T) {
+	repo := &playerRepo{players: map[string]*domain.Player{}}
+	svc := NewService(repo, nil)
+
+	_, err := svc.UpdateStats(context.Background(), "missing", 1, 0, 0, 0)
+	assert.ErrorIs(t, err, ErrPlayerNotFound)
+}
