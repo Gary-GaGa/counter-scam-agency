@@ -107,11 +107,12 @@ export function createNavBar(scene: Phaser.Scene): void {
     { label: '🏠 主選單', scene: 'MainMenuScene' },
     { label: '📋 案件', scene: 'CaseListScene' },
     { label: '🌳 技能樹', scene: 'SkillTreeScene' },
+    { label: '🏰 基地', scene: 'BaseScene' },
     { label: '👤 狀態', scene: 'ProfileScene' },
   ];
 
-  const startX = 140;
-  const gap = 220;
+  const startX = 100;
+  const gap = 190;
 
   navItems.forEach((item, i) => {
     const btn = scene.add.text(startX + i * gap, y, item.label, {

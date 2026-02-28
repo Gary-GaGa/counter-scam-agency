@@ -38,6 +38,10 @@ export class MainMenuScene extends Phaser.Scene {
       this.scene.start('ProfileScene');
     }, 280, 52);
 
+    createButton(this, cx, 530, '🏰 防禦基地', () => {
+      this.scene.start('BaseScene');
+    }, 280, 52);
+
     // Version tag
     this.add.text(GAME_WIDTH - 16, GAME_HEIGHT - 16, 'MVP v0.1', {
       fontFamily: 'monospace',
