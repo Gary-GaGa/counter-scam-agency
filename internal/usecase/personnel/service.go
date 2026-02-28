@@ -15,6 +15,7 @@ var _ portin.PersonnelUsecase = (*Service)(nil)
 
 var (
 	ErrPlayerNotFound   = errors.New("player not found")
+	ErrPlayerExists     = errors.New("player already exists")
 	ErrSkillNotFound    = errors.New("skill not found")
 	ErrSkillLocked      = errors.New("skill not unlocked")
 	ErrSkillNotEquipped = errors.New("skill not equipped")
@@ -34,6 +35,34 @@ func NewService(players domain.PlayerRepository, catalog []domain.Skill) *Servic
 		mapped[skill.ID] = skill
 	}
 	return &Service{players: players, catalog: mapped}
+}
+
+// CreatePlayer creates a new player with default stats.
+func (s *Service) CreatePlayer(ctx context.Context, playerID string) (*dto.PlayerSummary, error) {
+	existing, err := s.players.FindByID(ctx, playerID)
+	if err != nil {
+		return nil, fmt.Errorf("find player: %w", err)
+	}
+	if existing != nil {
+		return nil, ErrPlayerExists
+	}
+	player := domain.NewPlayer(playerID)
+	if err := s.players.Save(ctx, player); err != nil {
+		return nil, fmt.Errorf("save player: %w", err)
+	}
+	return mapPlayer(player), nil
+}
+
+// GetPlayer returns a player summary by ID.
+func (s *Service) GetPlayer(ctx context.Context, playerID string) (*dto.PlayerSummary, error) {
+	player, err := s.players.FindByID(ctx, playerID)
+	if err != nil {
+		return nil, fmt.Errorf("find player: %w", err)
+	}
+	if player == nil {
+		return nil, ErrPlayerNotFound
+	}
+	return mapPlayer(player), nil
 }
 
 // ListSkills lists available skills with player state.
@@ -167,4 +196,18 @@ func getCooldown(player *domain.Player, skillID string) int {
 		return 0
 	}
 	return player.Partner.CooldownRemaining(skillID)
+}
+
+func mapPlayer(player *domain.Player) *dto.PlayerSummary {
+	stats := player.GetTotalStats()
+	return &dto.PlayerSummary{
+		ID:         player.ID,
+		Reputation: player.Reputation,
+		Stats: dto.StatsSummary{
+			Logic:      stats.Logic,
+			Tech:       stats.Tech,
+			Charisma:   stats.Charisma,
+			Resilience: stats.Resilience,
+		},
+	}
 }

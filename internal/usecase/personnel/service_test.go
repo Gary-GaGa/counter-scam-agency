@@ -147,3 +147,46 @@ func TestUnlockSkill_SkillNotFound(t *testing.T) {
 	_, err := svc.UnlockSkill(context.Background(), player.ID, "nonexistent")
 	assert.ErrorIs(t, err, ErrSkillNotFound)
 }
+
+func TestCreatePlayer(t *testing.T) {
+	repo := &playerRepo{players: map[string]*domain.Player{}}
+	svc := NewService(repo, nil)
+
+	result, err := svc.CreatePlayer(context.Background(), "player-1")
+	assert.NoError(t, err)
+	assert.Equal(t, "player-1", result.ID)
+	assert.Equal(t, 0, result.Reputation)
+	assert.Equal(t, 10, result.Stats.Logic)
+}
+
+func TestCreatePlayer_Duplicate(t *testing.T) {
+	repo := &playerRepo{players: map[string]*domain.Player{}}
+	svc := NewService(repo, nil)
+
+	_, err := svc.CreatePlayer(context.Background(), "player-1")
+	assert.NoError(t, err)
+
+	_, err = svc.CreatePlayer(context.Background(), "player-1")
+	assert.ErrorIs(t, err, ErrPlayerExists)
+}
+
+func TestGetPlayer(t *testing.T) {
+	repo := &playerRepo{players: map[string]*domain.Player{}}
+	svc := NewService(repo, nil)
+	player := domain.NewPlayer("player-1")
+	player.AddReputation(25)
+	repo.players[player.ID] = player
+
+	result, err := svc.GetPlayer(context.Background(), player.ID)
+	assert.NoError(t, err)
+	assert.Equal(t, "player-1", result.ID)
+	assert.Equal(t, 25, result.Reputation)
+}
+
+func TestGetPlayer_NotFound(t *testing.T) {
+	repo := &playerRepo{players: map[string]*domain.Player{}}
+	svc := NewService(repo, nil)
+
+	_, err := svc.GetPlayer(context.Background(), "missing")
+	assert.ErrorIs(t, err, ErrPlayerNotFound)
+}

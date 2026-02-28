@@ -6,6 +6,7 @@
 *.test
 /cli
 /adventure
+/api
 /seed-missions
 
 # Build outputs
@@ -19,6 +20,11 @@ release/
 *.tmp
 *.swp
 .DS_Store
+
+# Environment
+.env
+.env.*
+!.env.example
 
 # Go Modules
 vendor/

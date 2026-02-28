@@ -1,6 +1,7 @@
 package http
 
 import (
+	"log"
 	"net/http"
 
 	"counter-scam-agency/internal/usecase/dto"
@@ -21,7 +22,8 @@ func (s *Server) handleCreateBase(w http.ResponseWriter, r *http.Request) {
 	}
 	result, err := s.defense.CreateBase(r.Context(), req.BaseID, req.OwnerID, req.Slots)
 	if err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
+		log.Printf("handleCreateBase: %v", err)
+		writeError(w, http.StatusBadRequest, "failed to create base")
 		return
 	}
 	writeJSON(w, http.StatusCreated, result)
@@ -30,9 +32,13 @@ func (s *Server) handleCreateBase(w http.ResponseWriter, r *http.Request) {
 // handleGetBase returns a base by ID.
 func (s *Server) handleGetBase(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
+	if !validatePathID(w, id, "id") {
+		return
+	}
 	result, err := s.defense.GetBase(r.Context(), id)
 	if err != nil {
-		writeError(w, http.StatusNotFound, err.Error())
+		log.Printf("handleGetBase: %v", err)
+		writeError(w, http.StatusNotFound, "base not found")
 		return
 	}
 	writeJSON(w, http.StatusOK, result)
@@ -50,6 +56,9 @@ type addFacilityRequest struct {
 // handleAddFacility adds a facility to a base.
 func (s *Server) handleAddFacility(w http.ResponseWriter, r *http.Request) {
 	baseID := r.PathValue("id")
+	if !validatePathID(w, baseID, "id") {
+		return
+	}
 	var req addFacilityRequest
 	if err := decodeJSON(r, &req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid request body")
@@ -57,7 +66,8 @@ func (s *Server) handleAddFacility(w http.ResponseWriter, r *http.Request) {
 	}
 	result, err := s.defense.AddFacility(r.Context(), baseID, dtoFacilityInput(req))
 	if err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
+		log.Printf("handleAddFacility: %v", err)
+		writeError(w, http.StatusBadRequest, "failed to add facility")
 		return
 	}
 	writeJSON(w, http.StatusCreated, result)
@@ -70,6 +80,9 @@ type upgradeSecurityRequest struct {
 // handleUpgradeSecurity increases the base security level.
 func (s *Server) handleUpgradeSecurity(w http.ResponseWriter, r *http.Request) {
 	baseID := r.PathValue("id")
+	if !validatePathID(w, baseID, "id") {
+		return
+	}
 	var req upgradeSecurityRequest
 	if err := decodeJSON(r, &req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid request body")
@@ -77,7 +90,8 @@ func (s *Server) handleUpgradeSecurity(w http.ResponseWriter, r *http.Request) {
 	}
 	result, err := s.defense.UpgradeSecurity(r.Context(), baseID, req.MaxLevel)
 	if err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
+		log.Printf("handleUpgradeSecurity: %v", err)
+		writeError(w, http.StatusBadRequest, "failed to upgrade security")
 		return
 	}
 	writeJSON(w, http.StatusOK, result)
@@ -87,9 +101,13 @@ func (s *Server) handleUpgradeSecurity(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleUpgradeFacility(w http.ResponseWriter, r *http.Request) {
 	baseID := r.PathValue("id")
 	facilityID := r.PathValue("facilityID")
+	if !validatePathID(w, baseID, "id") || !validatePathID(w, facilityID, "facilityID") {
+		return
+	}
 	result, err := s.defense.UpgradeFacility(r.Context(), baseID, facilityID)
 	if err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
+		log.Printf("handleUpgradeFacility: %v", err)
+		writeError(w, http.StatusBadRequest, "failed to upgrade facility")
 		return
 	}
 	writeJSON(w, http.StatusOK, result)

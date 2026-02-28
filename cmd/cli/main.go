@@ -30,7 +30,8 @@ func main() {
 
 	client, err := mongoinfra.NewClient(ctx, cfg)
 	if err != nil {
-		panic(err)
+		fmt.Fprintf(os.Stderr, "mongo connect: %v\n", err)
+		os.Exit(1)
 	}
 	defer func() {
 		_ = mongoinfra.Disconnect(ctx, client)
@@ -38,7 +39,8 @@ func main() {
 
 	db, err := mongoinfra.NewDatabase(client, cfg)
 	if err != nil {
-		panic(err)
+		fmt.Fprintf(os.Stderr, "mongo database: %v\n", err)
+		os.Exit(1)
 	}
 
 	missionsRepo := mission.NewMongoRepository(db)
@@ -52,7 +54,8 @@ func main() {
 
 	playerID := getenv("PLAYER_ID", "player-1")
 	if err := ensurePlayer(ctx, playersRepo, playerID); err != nil {
-		panic(err)
+		fmt.Fprintf(os.Stderr, "ensure player: %v\n", err)
+		os.Exit(1)
 	}
 
 	fmt.Println("╔══════════════════════════════════════╗")
